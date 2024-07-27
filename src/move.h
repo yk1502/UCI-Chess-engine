@@ -65,7 +65,7 @@ static inline int GetMovePromotion(int encodedMove) {
 }
 
 
-static inline int AddMove(MoveList* moveList, int encodedMove) {
-    moveList->moves[count] = encodedMove;
+static inline void AddMove(MoveList* moveList, int encodedMove) {
+    moveList->moves[moveList->count] = encodedMove;
     moveList->count++;
 }

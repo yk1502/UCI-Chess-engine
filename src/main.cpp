@@ -44,9 +44,40 @@ int main() {
     InitLeaperAttacks();
 
 
+
+    
+
     
 
     /*
+    int move1 = EncodeMove(Pieces::Q, 63, 62, 0, 0, 0, 0, Pieces::k);
+    int move2 = EncodeMove(Pieces::p, 63, 62, 0, 0, 0, 0, Pieces::k);
+    
+    MoveList moveList[1];
+    AddMove(moveList, move1);
+    AddMove(moveList, move2);
+
+    std::cout << GetMovePiece(moveList->moves[0]) << std::endl;
+    
+    std::cout << GetMoveSource(moveList->moves[0]) << std::endl;
+    std::cout << GetMoveTarget(moveList->moves[0]) << std::endl;
+    std::cout << GetMoveCapture(moveList->moves[0]) << std::endl;
+    std::cout << GetMoveEnpassant(moveList->moves[0]) << std::endl;
+    std::cout << GetMoveCastling(moveList->moves[0]) << std::endl;
+    std::cout << GetMoveDouble(moveList->moves[0]) << std::endl;
+    std::cout << GetMovePromotion(moveList->moves[0]) << std::endl;
+
+    std::cout << GetMovePiece(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveSource(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveTarget(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveCapture(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveEnpassant(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveCastling(moveList->moves[1]) << std::endl;
+    std::cout << GetMoveDouble(moveList->moves[1]) << std::endl;
+    std::cout << GetMovePromotion(moveList->moves[1]) << std::endl;
+
+    std::cout << moveList->count << std::endl;
+--------------------------------------------------------------------------
 
     int move = EncodeMove(Pieces::Q, 63, 62, 0, 0, 0, 0, Pieces::k);
 
@@ -60,8 +91,8 @@ int main() {
     std::cout << GetMovePromotion(move) << std::endl;
 
    
+------------------------------------------------------------------------------
 
-   
     uint64_t blockertest = 0ULL;
     SetBit(&blockertest, Squares::g6);
     SetBit(&blockertest, Squares::h7);
@@ -81,6 +112,7 @@ int main() {
 
 
 /*
+------------------------------------------------------------
     uint64_t blockertest = 0ULL;
     
     SetBit(&blockertest, Squares::e6);
