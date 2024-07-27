@@ -5,6 +5,7 @@
 
 #include "bitboard.h"
 #include "board.h"
+#include "move.h"
 
 
 uint64_t GenBishopMask(int square);
@@ -35,6 +36,7 @@ std::string position3 = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - ";
 std::string position4 = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1";
 
 
+
 int main() {
 
     InitMask();
@@ -42,14 +44,24 @@ int main() {
     InitLeaperAttacks();
 
 
-    ParseFen(position3);
-    PrintBoard();
+    
 
+    /*
 
+    int move = EncodeMove(Pieces::Q, 63, 62, 0, 0, 0, 0, Pieces::k);
+
+    std::cout << GetMovePiece(move) << std::endl;
+    std::cout << GetMoveSource(move) << std::endl;
+    std::cout << GetMoveTarget(move) << std::endl;
+    std::cout << GetMoveCapture(move) << std::endl;
+    std::cout << GetMoveEnpassant(move) << std::endl;
+    std::cout << GetMoveCastling(move) << std::endl;
+    std::cout << GetMoveDouble(move) << std::endl;
+    std::cout << GetMovePromotion(move) << std::endl;
 
    
 
-    /*
+   
     uint64_t blockertest = 0ULL;
     SetBit(&blockertest, Squares::g6);
     SetBit(&blockertest, Squares::h7);
@@ -85,12 +97,13 @@ int main() {
 
     PrintBitboard(blockertest);
     PrintBitboard(GetRookAttacks(Squares::e4, blockertest));
-    
-
     */
+
+    
     
 
 
 
     
 }
+

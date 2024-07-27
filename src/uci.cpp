@@ -75,7 +75,6 @@ void ParseFen(std::string fen) {
     }
 
     // enpassant square
-    std::cout << "sadasdasd" << fenSplit[3] << std::endl;
     if (fenSplit[3] != "-") {
         
         int file = fenSplit[3][0] - 'a';
