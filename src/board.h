@@ -2,7 +2,10 @@
 
 
 extern uint64_t bitboards[12];
+
 extern uint64_t occupancies[3];
+
+extern int mailbox[64];
 
 extern int side;
 
@@ -12,7 +15,7 @@ extern int enpassantSquare;
 
 extern uint64_t hashKey;
 
-
+bool IsSquareAttacked(int square, int side);
 
 
 enum {
@@ -20,6 +23,34 @@ enum {
     black,
     both
 };
+
+
+
+static constexpr int castlingRights[64] = {
+	 7, 15, 15, 15,  3, 15, 15, 11,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	15, 15, 15, 15, 15, 15, 15, 15,
+	13, 15, 15, 15, 12, 15, 15, 14
+};
+
+
+#define CopyBoard()                                                                      \
+    uint64_t c_bitboards[12], c_occupancies[3];                                          \
+    int c_enpassantSquare, c_side, c_castling;                                           \
+    c_enpassantSquare = enpassantSquare, c_side = side, c_castling = castling;           \
+    std::copy(std::begin(bitboards), std::end(bitboards), std::begin(c_bitboards));      \
+    std::copy(std::begin(occupancies), std::end(occupancies), std::begin(c_occupancies));\
+
+
+
+#define TakeBack()                                                                       \
+    enpassantSquare = c_enpassantSquare, side = c_side, castling = c_castling;           \
+    std::copy(std::begin(c_bitboards), std::end(c_bitboards), std::begin(bitboards));      \
+    std::copy(std::begin(c_occupancies), std::end(c_occupancies), std::begin(occupancies));\
 
 
 

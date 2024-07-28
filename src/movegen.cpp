@@ -1,5 +1,6 @@
 #include <string>
 #include <cstdint>
+#include <algorithm>
 
 #include "bitboard.h"
 #include "board.h"
@@ -8,7 +9,7 @@
 
 
 
-bool IsSquareAttacked(int square, int side);
+
 
 
 
@@ -138,6 +139,63 @@ void MoveGen(MoveList* moveList) {
                     attack = GetQueenAttacks(sourceSquare, occupancies[both]);
                 } else if (piece == (Pieces::K + offsetPiece)) {
                     attack = GetKingAttacks(sourceSquare);
+
+                    // since we can only make a castling move if we have the rights
+                    // to do so, so check that first !
+                    if (side == white) {
+                        // if we have the rights to do castling, there're a few things to consider before
+                        // we can generate it, 
+                        // 1. king must not be in checked
+                        // 2. rook must be in the original spot
+                        // 3. king must be in the original spot
+                        // 4. no opponent pieces is attacking the range of castling
+                        // though we can skip step 2 and 3, because if it moves the castling rights will be lost anyway
+                        if (castling & 0b0001) {  // white king side castling
+                            if (!(  IsSquareAttacked(Squares::e1, otherSide)
+                                ||  IsSquareAttacked(Squares::f1, otherSide)
+                                ||  IsSquareAttacked(Squares::g1, otherSide)
+                                ||  GetBit(occupancies[both], Squares::f1)
+                                ||  GetBit(occupancies[both], Squares::g1)
+                            )) {
+                                AddMove(moveList, EncodeMove(piece, Squares::e1, Squares::g1, 0, 0, 1, 0, 0));
+                            }
+                        }
+
+                        if (castling & 0b0010) {  // white queen side castling 
+                            if (!(  IsSquareAttacked(Squares::c1, otherSide)
+                                ||  IsSquareAttacked(Squares::d1, otherSide)
+                                ||  IsSquareAttacked(Squares::e1, otherSide)
+                                ||  GetBit(occupancies[both], Squares::d1)
+                                ||  GetBit(occupancies[both], Squares::c1)
+                                ||  GetBit(occupancies[both], Squares::b1)
+                            )) {
+                                AddMove(moveList, EncodeMove(piece, Squares::e1, Squares::c1, 0, 0, 1, 0, 0));
+                            }
+                        }
+                    } else {
+                        if (castling & 0b0100) {  // black king side castling
+                            if (!(  IsSquareAttacked(Squares::e8, otherSide)
+                                ||  IsSquareAttacked(Squares::f8, otherSide)
+                                ||  IsSquareAttacked(Squares::g8, otherSide)
+                                ||  GetBit(occupancies[both], Squares::f8)
+                                ||  GetBit(occupancies[both], Squares::g8)
+                            )) {
+                                AddMove(moveList, EncodeMove(piece, Squares::e8, Squares::g8, 0, 0, 1, 0, 0));
+                            }
+                        }
+
+                        if (castling & 0b1000) {  // black queen side castling 
+                            if (!(  IsSquareAttacked(Squares::c8, otherSide)
+                                ||  IsSquareAttacked(Squares::d8, otherSide)
+                                ||  IsSquareAttacked(Squares::e8, otherSide)
+                                ||  GetBit(occupancies[both], Squares::d8)
+                                ||  GetBit(occupancies[both], Squares::c8)
+                                ||  GetBit(occupancies[both], Squares::b8)
+                            )) {
+                                AddMove(moveList, EncodeMove(piece, Squares::e8, Squares::c8, 0, 0, 1, 0, 0));
+                            }
+                        }
+                    }
                 }
 
                 // now we'll loop through all the attacks, and generate what's possible
@@ -159,66 +217,6 @@ void MoveGen(MoveList* moveList) {
                     }
 
                     PopBit(&attack, attackSquare);
-                }
-
-                // after we're done with attacks, theres still a move to consider, which is
-                // castling moves, since we can only make a castling move if we have the rights
-                // to do so, so check that first !
-                if (side == white) {
-                    // if we have the rights to do castling, there're a few things to consider before
-                    // we can generate it, 
-                    // 1. king must not be in checked
-                    // 2. rook must be in the original spot
-                    // 3. king must be in the original spot
-                    // 4. no opponent pieces is attacking the range of castling
-                    // though we can skip step 2 and 3, because if it moves the castling rights will be lost anyway
-                    if (castling & 0b1000) {  // white king side castling
-                        if (!(  IsSquareAttacked(Squares::e1, otherSide)
-                            ||  IsSquareAttacked(Squares::f1, otherSide)
-                            ||  IsSquareAttacked(Squares::g1, otherSide)
-                            ||  IsSquareAttacked(Squares::h1, otherSide)
-                            ||  GetBit(occupancies[both], Squares::f1)
-                            ||  GetBit(occupancies[both], Squares::g1)
-                        )) {
-                            AddMove(moveList, EncodeMove(piece, Squares::e1, Squares::g1, 0, 0, 1, 0, 0));
-                        }
-                    }
-
-                    if (castling & 0b0100) {  // white queen side castling 
-                        if (!(  IsSquareAttacked(Squares::c1, otherSide)
-                            ||  IsSquareAttacked(Squares::d1, otherSide)
-                            ||  IsSquareAttacked(Squares::e1, otherSide)
-                            ||  GetBit(occupancies[both], Squares::d1)
-                            ||  GetBit(occupancies[both], Squares::c1)
-                            ||  GetBit(occupancies[both], Squares::b1)
-                        )) {
-                            AddMove(moveList, EncodeMove(piece, Squares::e1, Squares::c1, 0, 0, 1, 0, 0));
-                        }
-                    }
-                } else {
-                    if (castling & 0b0010) {  // black king side castling
-                        if (!(  IsSquareAttacked(Squares::e8, otherSide)
-                            ||  IsSquareAttacked(Squares::f8, otherSide)
-                            ||  IsSquareAttacked(Squares::g8, otherSide)
-                            ||  IsSquareAttacked(Squares::h8, otherSide)
-                            ||  GetBit(occupancies[both], Squares::f8)
-                            ||  GetBit(occupancies[both], Squares::g8)
-                        )) {
-                            AddMove(moveList, EncodeMove(piece, Squares::e8, Squares::g8, 0, 0, 1, 0, 0));
-                        }
-                    }
-
-                    if (castling & 0b0100) {  // black queen side castling 
-                        if (!(  IsSquareAttacked(Squares::c8, otherSide)
-                            ||  IsSquareAttacked(Squares::d8, otherSide)
-                            ||  IsSquareAttacked(Squares::e8, otherSide)
-                            ||  GetBit(occupancies[both], Squares::d8)
-                            ||  GetBit(occupancies[both], Squares::c8)
-                            ||  GetBit(occupancies[both], Squares::b8)
-                        )) {
-                            AddMove(moveList, EncodeMove(piece, Squares::e8, Squares::c8, 0, 0, 1, 0, 0));
-                        }
-                    }
                 }
             }
 

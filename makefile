@@ -1,5 +1,5 @@
 CC = clang++
-CFLAGS = -Wall -Wextra -O3 -march=native -std=c++20 -stdlib=libc++
+CFLAGS = -Wall -Wextra -O3 -march=native -flto -funroll-loops -std=c++20 -stdlib=libc++
 SRC_DIR = src
 BUILD_DIR = build
 

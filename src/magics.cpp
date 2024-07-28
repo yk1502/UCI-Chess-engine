@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <iostream>
 #include <random>
+#include <algorithm>
 #include "attacks.h"
 #include "bitboard.h"
 

@@ -1,11 +1,13 @@
-#include <iostream>
+#pragma once
+
+
 #include <string>
-#include <bitset>
 #include "bitboard.h"
+#include "attacks.h"
 #include "board.h"
 
 
-void PrintBitboard(uint64_t bitboard) {
+static inline void PrintBitboard(uint64_t bitboard) {
     std::cout << std::endl;
     std::cout << std::endl;
 
@@ -24,7 +26,7 @@ void PrintBitboard(uint64_t bitboard) {
 }
 
 
-void PrintBoard() {
+static inline void PrintBoard() {
     std::cout << std::endl;
     std::cout << std::endl;
 
@@ -58,3 +60,25 @@ void PrintBoard() {
 }
 
 
+static inline uint64_t GetTimeMs() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::high_resolution_clock::now().time_since_epoch()
+    ).count();
+}
+
+
+static inline void PrintMove(int move) {
+    int sourceSquare = GetMoveSource(move);
+    int targetSquare = GetMoveTarget(move);
+    int isPromotion = GetMovePromotion(move);
+
+    std::string promotion = "";
+
+    if (isPromotion == 1 || isPromotion == 7) {promotion = "n";}
+    else if (isPromotion == 2 || isPromotion == 8) {promotion = "b";}
+    else if (isPromotion == 3 || isPromotion == 9) {promotion = "r";}
+    else if (isPromotion == 4 || isPromotion == 4) {promotion = "q";}
+    
+
+    std::cout << Squares::numToSquare[sourceSquare] << Squares::numToSquare[targetSquare] << promotion;
+}

@@ -1,13 +1,17 @@
 #include <string>
 #include <sstream>
 #include <iostream>
-
+#include <algorithm>
 
 #include "board.h"
 #include "bitboard.h"
+#include "move.h"
 
 
 
+void MoveGen(MoveList* moveList);
+
+bool MakeMove(int move);
 
 
 static inline int pieceToNum(char piece) {
@@ -35,6 +39,7 @@ void ParseFen(std::string fen) {
 
     std::fill(std::begin(bitboards), std::end(bitboards), 0ULL);
     std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
+    std::fill(std::begin(mailbox), std::end(mailbox), -1);
     side = 0;
     castling = 0;
     enpassantSquare = Squares::noSquare;
@@ -54,6 +59,7 @@ void ParseFen(std::string fen) {
         int piece = pieceToNum(p);
         if (piece != -1) {
             ++square;
+            mailbox[square] = piece;
             SetBit(&bitboards[piece], square);
         } else {
             if (p != '/') {
@@ -73,13 +79,13 @@ void ParseFen(std::string fen) {
     // castling rights
     for (char c : fenSplit[2]) {
         if (c == 'K') {
-            castling = castling | (1 << 3);
-        } else if (c == 'Q') {
-            castling = castling | (1 << 2);
-        } else if (c == 'k') {
-            castling = castling | (1 << 1);
-        } else if (c == 'q') {
             castling = castling | (1);
+        } else if (c == 'Q') {
+            castling = castling | (1 << 1);
+        } else if (c == 'k') {
+            castling = castling | (1 << 2);
+        } else if (c == 'q') {
+            castling = castling | (1 << 3);
         }
     }
 
@@ -100,4 +106,37 @@ void ParseFen(std::string fen) {
 
     occupancies[both] = occupancies[white] | occupancies[black];
     
+}
+
+
+int ParseMove(const char* moveInStr) {
+    int sourceSquare = (moveInStr[0] - 'a') + 8 * (8 - (moveInStr[1] - '0')); 
+    int targetSquare = (moveInStr[2] - 'a') + 8 * (8 - (moveInStr[3] - '0')); 
+
+    MoveList moveList[1];
+    MoveGen(moveList);
+
+    for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
+        int move = moveList->moves[moveCount];
+
+		if (sourceSquare == GetMoveSource(move) && targetSquare == GetMoveTarget(move)) {
+			int promotedPiece = GetMovePromotion(move);
+
+			if (promotedPiece) {
+				if ((promotedPiece == Pieces::Q || promotedPiece == Pieces::q) && moveInStr[4] == 'q')
+					return move;
+				else if ((promotedPiece == Pieces::R || promotedPiece == Pieces::r) && moveInStr[4] == 'r')
+					return move;
+				else if ((promotedPiece == Pieces::B || promotedPiece == Pieces::b) && moveInStr[4] == 'b')
+					return move;
+				else if ((promotedPiece == Pieces::N || promotedPiece == Pieces::n) && moveInStr[4] == 'n')
+					return move;
+
+				continue;
+			}
+
+			return move;
+		}
+    }
+    return 0;
 }
