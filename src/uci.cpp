@@ -32,6 +32,15 @@ static inline int pieceToNum(char piece) {
 
 
 void ParseFen(std::string fen) {
+
+    std::fill(std::begin(bitboards), std::end(bitboards), 0ULL);
+    std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
+    side = 0;
+    castling = 0;
+    enpassantSquare = Squares::noSquare;
+    hashKey = 0ULL;    
+    
+
     std::stringstream ss(fen);
     std::string fenSplit[6];
 
@@ -83,5 +92,12 @@ void ParseFen(std::string fen) {
         int square = rank * 8 + file;
         enpassantSquare = square;
     }
+
+    for (int i = 0; i < 6; ++i) {
+        occupancies[white] |= bitboards[i];
+        occupancies[black] |= bitboards[i + 6];
+    }
+
+    occupancies[both] = occupancies[white] | occupancies[black];
     
 }

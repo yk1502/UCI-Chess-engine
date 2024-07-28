@@ -23,11 +23,13 @@ uint64_t GetRookAttacks(int square, uint64_t occupancy);
 uint64_t GetPawnAttacks(int square, int colour);
 uint64_t GetKnightAttacks(int square);
 uint64_t GetKingAttacks(int square);
+uint64_t GetQueenAttacks(int square, uint64_t occupancy);
 void InitSliderAttacks();
 void InitMask();
 void InitLeaperAttacks();
 void ParseFen(std::string fen);
 void PrintBoard();
+void MoveGen(MoveList* moveList);
 
 
 std::string startPos = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -43,8 +45,13 @@ int main() {
     InitSliderAttacks();
     InitLeaperAttacks();
 
+    ParseFen(startPos);
 
+    MoveList moveList[1];
+    MoveGen(moveList);
 
+    std::cout << moveList->count << std::endl;
+    
     
 
     

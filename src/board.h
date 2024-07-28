@@ -13,6 +13,8 @@ extern int enpassantSquare;
 extern uint64_t hashKey;
 
 
+
+
 enum {
     white,
     black,

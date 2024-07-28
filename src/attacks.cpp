@@ -566,3 +566,9 @@ uint64_t GetRookAttacks(int square, uint64_t occupancy) {
     return rookAttacks[square][magicIndex];
 }
 
+
+uint64_t GetQueenAttacks(int square, uint64_t occupancy) {
+    
+    return (GetBishopAttacks(square, occupancy) | GetRookAttacks(square, occupancy));
+}
+
