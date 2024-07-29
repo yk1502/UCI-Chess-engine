@@ -39,18 +39,20 @@ static constexpr int castlingRights[64] = {
 
 
 #define CopyBoard()                                                                      \
-    uint64_t c_bitboards[12], c_occupancies[3];                                          \
+    uint64_t c_bitboards[12], c_occupancies[3], c_mailbox[64];                           \
     int c_enpassantSquare, c_side, c_castling;                                           \
     c_enpassantSquare = enpassantSquare, c_side = side, c_castling = castling;           \
     std::copy(std::begin(bitboards), std::end(bitboards), std::begin(c_bitboards));      \
     std::copy(std::begin(occupancies), std::end(occupancies), std::begin(c_occupancies));\
+    std::copy(std::begin(mailbox), std::end(mailbox), std::begin(c_mailbox));            \
 
 
 
-#define TakeBack()                                                                       \
-    enpassantSquare = c_enpassantSquare, side = c_side, castling = c_castling;           \
-    std::copy(std::begin(c_bitboards), std::end(c_bitboards), std::begin(bitboards));      \
-    std::copy(std::begin(c_occupancies), std::end(c_occupancies), std::begin(occupancies));\
+#define TakeBack()                                                                           \
+    enpassantSquare = c_enpassantSquare, side = c_side, castling = c_castling;               \
+    std::copy(std::begin(c_bitboards), std::end(c_bitboards), std::begin(bitboards));        \
+    std::copy(std::begin(c_occupancies), std::end(c_occupancies), std::begin(occupancies));  \
+    std::copy(std::begin(c_mailbox), std::end(c_mailbox), std::begin(mailbox));              \
 
 
 

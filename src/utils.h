@@ -2,9 +2,14 @@
 
 
 #include <string>
+#include <iostream>
 #include "bitboard.h"
 #include "attacks.h"
 #include "board.h"
+#include "move.h"
+
+
+void MoveGen(MoveList* moveList);
 
 
 static inline void PrintBitboard(uint64_t bitboard) {
@@ -77,8 +82,25 @@ static inline void PrintMove(int move) {
     if (isPromotion == 1 || isPromotion == 7) {promotion = "n";}
     else if (isPromotion == 2 || isPromotion == 8) {promotion = "b";}
     else if (isPromotion == 3 || isPromotion == 9) {promotion = "r";}
-    else if (isPromotion == 4 || isPromotion == 4) {promotion = "q";}
+    else if (isPromotion == 4 || isPromotion == 10) {promotion = "q";}
     
 
     std::cout << Squares::numToSquare[sourceSquare] << Squares::numToSquare[targetSquare] << promotion;
+}
+
+
+static inline void PrintMoveList() {
+
+    MoveList moveList[1];
+    MoveGen(moveList);
+
+    for (int i = 0; i < moveList->count ; ++i) {
+        PrintMove(moveList->moves[i]);
+
+        if (moveList->moves[i] == 10616678) {
+            std::cout << " promotion : " << GetMovePromotion(10616678); 
+        }
+
+        std::cout << "  " << moveList->moves[i] << std::endl;
+    }
 }

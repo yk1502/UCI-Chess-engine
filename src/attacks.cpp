@@ -30,36 +30,33 @@ uint64_t GenPawnAttacks(int square, int colour) {
     bool isOnAFile = pawnBitboard & Files::aFile;
     bool isOnHFile = pawnBitboard & Files::hFile; 
 
-    if ((square > 7) && (square < 56)) {
 
-        uint64_t attackBitboard = 0ULL;
+    uint64_t attackBitboard = 0ULL;
 
-        if (colour == white) {    
+    if (colour == white) {    
 
-            if (!isOnAFile) {
-                SetBit(&attackBitboard, square + Directions::upLeft);
-            }
-
-            if (!isOnHFile) {
-                SetBit(&attackBitboard, square + Directions::upRight);
-            }
-
-        }  else {
-
-            if (!isOnAFile) {
-                SetBit(&attackBitboard, square + Directions::downLeft);
-            }
-
-            if (!isOnHFile) {
-                SetBit(&attackBitboard, square + Directions::downRight);
-            }
-
+        if (!isOnAFile) {
+            SetBit(&attackBitboard, square + Directions::upLeft);
         }
-        
-        return attackBitboard;
-    } 
 
-    return 0ULL;
+        if (!isOnHFile) {
+            SetBit(&attackBitboard, square + Directions::upRight);
+        }
+
+    }  else  {
+        
+        if (!isOnAFile) {
+            SetBit(&attackBitboard, square + Directions::downLeft);
+        }
+
+        if (!isOnHFile) {
+            SetBit(&attackBitboard, square + Directions::downRight);
+        }
+
+    }
+    
+    return attackBitboard;
+    
 }
 
 

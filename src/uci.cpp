@@ -110,8 +110,8 @@ void ParseFen(std::string fen) {
 
 
 int ParseMove(const char* moveInStr) {
-    int sourceSquare = (moveInStr[0] - 'a') + 8 * (8 - (moveInStr[1] - '0')); 
-    int targetSquare = (moveInStr[2] - 'a') + 8 * (8 - (moveInStr[3] - '0')); 
+    int sourceSquare = (moveInStr[0] - 'a') + (8 - (moveInStr[1] - '0')) * 8; 
+    int targetSquare = (moveInStr[2] - 'a') + (8 - (moveInStr[3] - '0')) * 8; 
 
     MoveList moveList[1];
     MoveGen(moveList);
@@ -119,7 +119,10 @@ int ParseMove(const char* moveInStr) {
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         int move = moveList->moves[moveCount];
 
+
+
 		if (sourceSquare == GetMoveSource(move) && targetSquare == GetMoveTarget(move)) {
+            
 			int promotedPiece = GetMovePromotion(move);
 
 			if (promotedPiece) {
@@ -134,6 +137,8 @@ int ParseMove(const char* moveInStr) {
 
 				continue;
 			}
+
+            
 
 			return move;
 		}

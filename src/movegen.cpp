@@ -6,7 +6,7 @@
 #include "board.h"
 #include "move.h"
 #include "attacks.h"
-
+#include "utils.h"
 
 
 
@@ -62,27 +62,26 @@ void MoveGen(MoveList* moveList) {
                 // this one is single push, well if it can't make a single push, 
                 // it definately can't make a double push too
                 if (!GetBit(occupancies[both], sourceSquare + pawnMarchOne)) {
-                    AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, 0));
 
-                    // but if it can make a single push, we need to check if its on their
-                    // origin square(rank) to make a double move
-                    if (   (sourceSquare >= pawnOriginLeft)
-                        && (sourceSquare <= pawnOriginRight)
-                        && !GetBit(occupancies[both], sourceSquare + pawnMarchDouble)) {
-                        AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchDouble, 0, 0, 0, 1, 0));
-
-                    // if it can make a single push, it has
-                    // the potential to be a promotion, so check that, but i use
-                    // *else if* instead of just if, because it cant be both a double push
-                    // move and a promotion at the same time
-                    // btw, this is just a single push promotion, not included capture promotion
-                    } else if ((sourceSquare >= pawnPromotionLeft) && (sourceSquare <= pawnPromotionRight)) {
+                    if ((sourceSquare >= pawnPromotionLeft) && (sourceSquare <= pawnPromotionRight)) {
+                        // if it can make a single push, it has
+                        // the potential to be a promotion, so check that,
+                        // btw, this is just a single push promotion, not included capture promotion
                         // the +offsetPiece is used to take care of other side's promotion piece type (black queen, white queen, etc.)
                         AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, Pieces::Q + offsetPiece));
                         AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, Pieces::R + offsetPiece));
                         AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, Pieces::B + offsetPiece));
                         AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, Pieces::N + offsetPiece));
-                    }
+                    } else {
+                        // if it can make a single push, we need to check if its on their
+                        // origin square(rank) to make a double move
+                        AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, 0));
+                        if (   (sourceSquare >= pawnOriginLeft)
+                            && (sourceSquare <= pawnOriginRight)
+                            && !GetBit(occupancies[both], sourceSquare + pawnMarchDouble)) {
+                            AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchDouble, 0, 0, 0, 1, 0));
+                        }
+                    }  
                 }
 
                 // if it can make an attack on *opponent pieces* (that's why occupancies is
@@ -201,11 +200,11 @@ void MoveGen(MoveList* moveList) {
                 // now we'll loop through all the attacks, and generate what's possible
                 
                 while (attack) {
-                    attackSquare = GetLsbIndex(attack);
-
+                    attackSquare = GetLsbIndex(attack); 
                     // if the current square is not occupied by one of our own pieces,
                     // then generate the attack to that square
                     if (!GetBit(occupancies[side], attackSquare)) {
+                        
                         // if the current square is occupied bt opponent pieces, generate the move
                         // and mark it as a capture
                         if (GetBit(occupancies[otherSide], attackSquare)) {

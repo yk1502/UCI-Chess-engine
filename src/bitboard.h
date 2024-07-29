@@ -15,11 +15,11 @@ static inline void PopBit(uint64_t* bitboard, int square) {
 }
 
 static inline int GetLsbIndex(uint64_t bitboard) {
-    return __builtin_ctzll(bitboard);
+    return std::countr_zero(bitboard);
 }
 
 static inline int GetBitCount(uint64_t bitboard) {
-    return __builtin_popcountll(bitboard);
+    return std::popcount(bitboard);
 }
 
 
