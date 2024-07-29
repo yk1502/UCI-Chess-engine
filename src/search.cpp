@@ -11,6 +11,7 @@
 
 
 int bestMove = 0;
+static int nodes = 0;
 
 
 int Negamax(int depth, int alpha, int beta, int ply) {
@@ -18,6 +19,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     if (depth == 0) {
         return Evaluate();
     }
+    nodes++;
 
     MoveList moveList[1];
     MoveGen(moveList);
@@ -57,8 +59,11 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     int beta = MAX_SCORE;
 
     int ply = 0;
+    nodes = 0;
 
-    int score = Negamax(3, alpha, beta, ply);
+    int score = Negamax(5, alpha, beta, ply);
+    
+    std::cout << "info score cp " << score << " depth 7 nodes " << nodes << std::endl; 
 
     std::cout << "bestmove ";
     PrintMove(bestMove);
