@@ -1,6 +1,7 @@
 #include <cstdint>
 #include <string>
 #include <unistd.h>
+#include <iostream>
 #include "move.h"
 #include "board.h"
 #include "bitboard.h"
@@ -12,11 +13,15 @@
 
 
 
-int bestMove = 0;
 static int nodes = 0;
+
+bool stopEarly = false;
 
 static uint64_t startTime = 0;
 static uint64_t moveTime = 0;
+
+int pvTable[64][64];
+int pvLength[64];
 
 
 static int MVVLVA[12][12] = {
@@ -151,6 +156,8 @@ int QSearch(int alpha, int beta) {
 
 int Negamax(int depth, int alpha, int beta, int ply) {
 
+    pvLength[ply] = ply;
+
     if (depth == 0) {
         return QSearch(alpha, beta);
     }
@@ -180,24 +187,26 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         TakeBack();
 
         if (GetTimeMs() - startTime >= moveTime) {
+            stopEarly = true;
             return 0;
         }
 
         if (score > bestScore) {
             bestScore = score;
 
-            if (ply == 0) {
-                bestMove = moveList->moves[moveCount];
-            }
-
             if (score > alpha) {
+
+                alpha = score;
+
+                pvTable[ply][ply] = moveList->moves[moveCount];
+                for (int nextPly = ply + 1; nextPly < pvLength[ply + 1]; nextPly++) {
+                    pvTable[ply][nextPly] = pvTable[ply + 1][nextPly];
+                }
+                pvLength[ply] = pvLength[ply + 1];
 
                 if (score >= beta) {
                     return score;
                 } 
-
-                alpha = score;
-
             }
 
         }
@@ -217,6 +226,13 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
 void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
+    for (int i = 0; i < 64; ++i) {
+        pvLength[i] = 0;
+        for (int j = 0; j < 64; ++j) {
+            pvTable[i][j] = 0;
+        }
+    }
+
     int alpha = -MAX_SCORE;
     int beta = MAX_SCORE;
 
@@ -225,24 +241,37 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
     int ply = 0;
     int bestMoveCurrIter = 0;
+
+    stopEarly = false;
     nodes = 0;
 
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
         int score = Negamax(currDepth, alpha, beta, ply);
 
-        // info score cp 2 depth 6 nodes 52805 time 93 pv
-        std::cout << "info score cp " << score << " depth " << currDepth << " nodes " << nodes << " time " << GetTimeMs() - startTime << std::endl;
+        if (!stopEarly) {
+            bestMoveCurrIter = pvTable[0][0];
+        }
 
+        // info score cp 2 depth 6 nodes 52805 time 93 pv
+        std::cout << "info score cp " << score << " depth " << currDepth << " nodes " << nodes << " time " << GetTimeMs() - startTime << " pv ";
+
+        for (int count = 0; count < pvLength[0]; ++count) {
+            PrintMove(pvTable[0][count]);
+             std::cout << " ";
+        }
+
+        std::cout << std::endl;
+        
         if (GetTimeMs() - startTime >= moveTime) {
             break;
         }
-
-        bestMoveCurrIter = bestMove;
+        
     }
     
 
     std::cout << "bestmove ";
     PrintMove(bestMoveCurrIter);
     std::cout << std::endl;
+    stopEarly = false;
     
 }
