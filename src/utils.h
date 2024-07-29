@@ -119,11 +119,7 @@ static inline void PrintMoveList(bool captureOnly = false) {
     for (int i = 0; i < moveList->count ; ++i) {
         PrintMove(moveList->moves[i]);
 
-        if (moveList->moves[i] == 10616678) {
-            std::cout << " promotion : " << GetMovePromotion(10616678); 
-        }
-
-        std::cout << "  " << moveList->moves[i] << std::endl;
+        // std::cout << "  " << ScoreMoves(moveList->moves[i]) << std::endl;
     }
 }
 

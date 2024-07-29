@@ -3,10 +3,12 @@
 #include <unistd.h>
 #include "move.h"
 #include "board.h"
+#include "bitboard.h"
 #include "utils.h"
 #include "makemove.h"
 #include "search.h"
 #include "eval.h"
+#include "move.h"
 
 
 
@@ -15,6 +17,81 @@ static int nodes = 0;
 
 static uint64_t startTime = 0;
 static uint64_t moveTime = 0;
+
+
+static int MVVLVA[12][12] = {
+ 	{105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
+	{104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
+	{103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
+	{102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
+	{101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
+	{100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600},
+
+	{105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
+	{104, 204, 304, 404, 504, 604,  104, 204, 304, 404, 504, 604},
+	{103, 203, 303, 403, 503, 603,  103, 203, 303, 403, 503, 603},
+	{102, 202, 302, 402, 502, 602,  102, 202, 302, 402, 502, 602},
+	{101, 201, 301, 401, 501, 601,  101, 201, 301, 401, 501, 601},
+	{100, 200, 300, 400, 500, 600,  100, 200, 300, 400, 500, 600}
+};
+
+
+
+int ScoreMoves(int move) {
+
+    int startPiece, endPiece;
+
+    if (GetMoveCapture(move)) {
+
+        if (side == black) {
+            startPiece = 0;
+            endPiece = 5;
+        } else {
+            startPiece = 6;
+            endPiece = 11;
+        }
+
+        int sourcePiece = GetMovePiece(move);
+        int targetSq = GetMoveTarget(move);
+        int targetPiece = Pieces::P;
+        
+        if (!GetMoveEnpassant(move)) {
+            for (int count = startPiece; count <= endPiece; count++) {
+                if (GetBit(bitboards[count], targetSq)) {
+                    targetPiece = count;
+                    break;
+                }
+            }
+        }
+
+        return MVVLVA[sourcePiece][targetPiece] + 10000;
+    } 
+    return 0;
+}
+
+
+
+void SortMoves(MoveList* moveList) {
+    int scores[moveList->count];
+
+    for (int count = 0; count < moveList->count; count++) {
+        scores[count] = ScoreMoves(moveList->moves[count]);
+    }
+
+    for (int currMove = 0; currMove < moveList->count; ++currMove) {
+        for (int nextMove = currMove + 1; nextMove < moveList->count; ++nextMove) {
+            if (scores[currMove] < scores[nextMove]) {
+                int tempMove = moveList->moves[currMove];
+                moveList->moves[currMove] = moveList->moves[nextMove];
+                moveList->moves[nextMove] = tempMove;
+
+                int tempScore = scores[currMove];
+                scores[currMove] = scores[nextMove];
+                scores[nextMove] = tempScore;
+            }
+        }
+    }
+}
 
 
 
@@ -34,6 +111,7 @@ int QSearch(int alpha, int beta) {
 
     MoveList moveList[1];
     MoveGen(moveList, true);
+    SortMoves(moveList);
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         CopyBoard()
@@ -83,6 +161,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
     MoveList moveList[1];
     MoveGen(moveList);
+    SortMoves(moveList);
     
     int bestScore = -MAX_SCORE;
     int totalMoves = 0;

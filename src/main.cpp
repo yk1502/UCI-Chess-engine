@@ -49,9 +49,11 @@ int main() {
 
     if (debug) {
 
-        ParseFen(position4);
+        ParseFen(kiwipete);
         PrintBoard();
-        PrintMoveList(true);
+
+
+        PrintMoveList(false);
         //PerftPositions();
 
     } else {
