@@ -208,9 +208,9 @@ void ParseFen(std::string fen);
 
 
 
-int nodes = 0;
+static int nodes = 0;
 
-int cumNodes = 0;
+static int cumNodes = 0;
 
 
 
