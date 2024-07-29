@@ -45,14 +45,14 @@ int main() {
     
     InitAll();
 
-    int debug = 0;
+    int debug = 1;
 
     if (debug) {
 
-        ParseFen("rnb1kbnQ/p1pp4/1p3q1p/8/8/8/PPP1PPPP/RNBQKBNR w KQq - 1 6");
+        ParseFen(position4);
         PrintBoard();
-        int score = Evaluate();
-        std::cout << score << std::endl;
+        PrintMoveList(true);
+        //PerftPositions();
 
     } else {
         UciLoop();      

@@ -111,10 +111,10 @@ static inline void PrintMove(int move) {
 }
 
 
-static inline void PrintMoveList() {
+static inline void PrintMoveList(bool captureOnly = false) {
 
     MoveList moveList[1];
-    MoveGen(moveList);
+    MoveGen(moveList, captureOnly);
 
     for (int i = 0; i < moveList->count ; ++i) {
         PrintMove(moveList->moves[i]);

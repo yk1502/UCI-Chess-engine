@@ -17,6 +17,63 @@ static uint64_t startTime = 0;
 static uint64_t moveTime = 0;
 
 
+
+int QSearch(int alpha, int beta) {
+    
+    int bestScore = Evaluate();
+
+    if (bestScore > alpha) {
+
+        if (bestScore >= beta) {
+            return bestScore;
+        } 
+
+        alpha = bestScore;
+
+    }
+
+    nodes++;
+
+    MoveList moveList[1];
+    MoveGen(moveList, true);
+
+    for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
+        CopyBoard()
+
+        if (!MakeMove(moveList->moves[moveCount])) {
+            continue;
+        }
+
+        int score = -QSearch(-beta, -alpha);
+
+        TakeBack();
+
+        if (GetTimeMs() - startTime >= moveTime) {
+            return 0;
+        }
+
+        if (score > bestScore) {
+            bestScore = score;
+
+            if (score > alpha) {
+
+                if (score >= beta) {
+                    return score;
+                } 
+
+                alpha = score;
+
+            }
+
+        }
+
+    }
+
+    return bestScore;
+}
+
+
+
 int Negamax(int depth, int alpha, int beta, int ply) {
 
     if (depth == 0) {

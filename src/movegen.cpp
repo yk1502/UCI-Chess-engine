@@ -13,7 +13,7 @@
 
 
 
-void MoveGen(MoveList* moveList) {
+void MoveGen(MoveList* moveList, bool captureOnly) {
 
     int otherSide = side ^ 1;
 
@@ -63,7 +63,7 @@ void MoveGen(MoveList* moveList) {
                 // it definately can't make a double push too
                 if (!GetBit(occupancies[both], sourceSquare + pawnMarchOne)) {
 
-                    if ((sourceSquare >= pawnPromotionLeft) && (sourceSquare <= pawnPromotionRight)) {
+                    if ((sourceSquare >= pawnPromotionLeft) && (sourceSquare <= pawnPromotionRight) && !captureOnly) {
                         // if it can make a single push, it has
                         // the potential to be a promotion, so check that,
                         // btw, this is just a single push promotion, not included capture promotion
@@ -75,10 +75,14 @@ void MoveGen(MoveList* moveList) {
                     } else {
                         // if it can make a single push, we need to check if its on their
                         // origin square(rank) to make a double move
-                        AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, 0));
+                        if (!captureOnly) {
+                            AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchOne, 0, 0, 0, 0, 0));
+                        }
+                        
                         if (   (sourceSquare >= pawnOriginLeft)
                             && (sourceSquare <= pawnOriginRight)
-                            && !GetBit(occupancies[both], sourceSquare + pawnMarchDouble)) {
+                            && !GetBit(occupancies[both], sourceSquare + pawnMarchDouble)
+                            && !captureOnly) {
                             AddMove(moveList, EncodeMove(piece, sourceSquare, sourceSquare + pawnMarchDouble, 0, 0, 0, 1, 0));
                         }
                     }  
@@ -89,6 +93,7 @@ void MoveGen(MoveList* moveList) {
                 // the pawn can attack 2 squares diagonally
                 attack = pawnAttacks[side][sourceSquare] & occupancies[otherSide];
                 while (attack) {
+                    
                     attackSquare = GetLsbIndex(attack);
 
                     // we need to think about promotion captures too, the thing is, 
@@ -107,6 +112,7 @@ void MoveGen(MoveList* moveList) {
                     }
 
                     PopBit(&attack, attackSquare);
+                    
                 }
 
                 // now its time for enpassant move, first check if enpassant square is available 
@@ -149,7 +155,7 @@ void MoveGen(MoveList* moveList) {
                         // 3. king must be in the original spot
                         // 4. no opponent pieces is attacking the range of castling
                         // though we can skip step 2 and 3, because if it moves the castling rights will be lost anyway
-                        if (castling & 0b0001) {  // white king side castling
+                        if ((castling & 0b0001) && !captureOnly) {  // white king side castling
                             if (!(  IsSquareAttacked(Squares::e1, otherSide)
                                 ||  IsSquareAttacked(Squares::f1, otherSide)
                                 ||  IsSquareAttacked(Squares::g1, otherSide)
@@ -160,7 +166,7 @@ void MoveGen(MoveList* moveList) {
                             }
                         }
 
-                        if (castling & 0b0010) {  // white queen side castling 
+                        if ((castling & 0b0010) && !captureOnly) {  // white queen side castling 
                             if (!(  IsSquareAttacked(Squares::c1, otherSide)
                                 ||  IsSquareAttacked(Squares::d1, otherSide)
                                 ||  IsSquareAttacked(Squares::e1, otherSide)
@@ -172,7 +178,7 @@ void MoveGen(MoveList* moveList) {
                             }
                         }
                     } else {
-                        if (castling & 0b0100) {  // black king side castling
+                        if ((castling & 0b0100) && !captureOnly) {  // black king side castling
                             if (!(  IsSquareAttacked(Squares::e8, otherSide)
                                 ||  IsSquareAttacked(Squares::f8, otherSide)
                                 ||  IsSquareAttacked(Squares::g8, otherSide)
@@ -183,7 +189,7 @@ void MoveGen(MoveList* moveList) {
                             }
                         }
 
-                        if (castling & 0b1000) {  // black queen side castling 
+                        if ((castling & 0b1000) && !captureOnly) {  // black queen side castling 
                             if (!(  IsSquareAttacked(Squares::c8, otherSide)
                                 ||  IsSquareAttacked(Squares::d8, otherSide)
                                 ||  IsSquareAttacked(Squares::e8, otherSide)
@@ -211,7 +217,9 @@ void MoveGen(MoveList* moveList) {
                             AddMove(moveList, EncodeMove(piece, sourceSquare, attackSquare, 1, 0, 0, 0, 0));
                         } else {
                             // if not, then simply generate a quiet move to that square
-                            AddMove(moveList, EncodeMove(piece, sourceSquare, attackSquare, 0, 0, 0, 0, 0));
+                            if (!captureOnly) {
+                                AddMove(moveList, EncodeMove(piece, sourceSquare, attackSquare, 0, 0, 0, 0, 0));
+                            }
                         }
                     }
 

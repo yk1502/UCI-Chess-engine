@@ -6,6 +6,8 @@
 #include "board.h"
 #include "move.h"
 #include "utils.h"
+#include "movegen.h"
+#include "makemove.h"
 
 
 std::string fenList[100] = {
@@ -198,10 +200,6 @@ int actualNodeCount[100] = {
 
 
 
-
-void MoveGen(MoveList* moveList);
-
-bool MakeMove(int move);
 
 void ParseFen(std::string fen);
 
