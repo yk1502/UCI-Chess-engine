@@ -23,6 +23,8 @@ static uint64_t moveTime = 0;
 int pvTable[64][64];
 int pvLength[64];
 
+int killerMoves[64][2];
+
 
 static int MVVLVA[12][12] = {
  	{105, 205, 305, 405, 505, 605,  105, 205, 305, 405, 505, 605},
@@ -42,7 +44,7 @@ static int MVVLVA[12][12] = {
 
 
 
-int ScoreMoves(int move) {
+static inline int ScoreMoves(int move, int ply) {
 
     int startPiece, endPiece;
 
@@ -70,17 +72,25 @@ int ScoreMoves(int move) {
         }
 
         return MVVLVA[sourcePiece][targetPiece] + 10000;
-    } 
-    return 0;
+    } else {
+        if (killerMoves[ply][0] == move) {
+            //return 0;
+            return 9000;
+        } else if (killerMoves[ply][1] == move) {
+            //return 0;
+            return 8000;
+        } 
+        return 0;   
+    }
 }
 
 
 
-void SortMoves(MoveList* moveList) {
+static inline void SortMoves(MoveList* moveList, int ply) {
     int scores[moveList->count];
 
     for (int count = 0; count < moveList->count; count++) {
-        scores[count] = ScoreMoves(moveList->moves[count]);
+        scores[count] = ScoreMoves(moveList->moves[count], ply);
     }
 
     for (int currMove = 0; currMove < moveList->count; ++currMove) {
@@ -116,7 +126,7 @@ int QSearch(int alpha, int beta) {
 
     MoveList moveList[1];
     MoveGen(moveList, true);
-    SortMoves(moveList);
+    SortMoves(moveList, -1);
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         CopyBoard()
@@ -168,7 +178,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
     MoveList moveList[1];
     MoveGen(moveList);
-    SortMoves(moveList);
+    SortMoves(moveList, ply);
     
     int bestScore = -MAX_SCORE;
     int totalMoves = 0;
@@ -205,6 +215,10 @@ int Negamax(int depth, int alpha, int beta, int ply) {
                 pvLength[ply] = pvLength[ply + 1];
 
                 if (score >= beta) {
+                    if (!GetMoveCapture(moveList->moves[moveCount])) {
+                        killerMoves[ply][1] = killerMoves[ply][0];
+                        killerMoves[ply][0] = moveList->moves[moveCount];
+                    }
                     return score;
                 } 
             }

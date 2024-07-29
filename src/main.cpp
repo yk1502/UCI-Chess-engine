@@ -49,11 +49,12 @@ int main() {
 
     if (debug) {
 
-        ParseFen(kiwipete);
-        PrintBoard();
+        int arrayTest[2][2] = {{1, 41}, {43, 12313213}};
 
+        std::memset(arrayTest, 0, sizeof(arrayTest));
 
-        PrintMoveList(false);
+        std::cout << arrayTest[0][0] << arrayTest[1][0] << std::endl;
+        std::cout << arrayTest[0][1] << arrayTest[1][1] << std::endl;
         //PerftPositions();
 
     } else {
