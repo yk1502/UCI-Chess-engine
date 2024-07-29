@@ -3,6 +3,8 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <sstream>
 #include "bitboard.h"
 #include "attacks.h"
 #include "board.h"
@@ -10,6 +12,28 @@
 
 
 void MoveGen(MoveList* moveList);
+
+
+
+static inline int pieceToNum(char piece) {
+    switch (piece) {
+        case 'P' : return 0;
+        case 'N' : return 1;
+        case 'B' : return 2;
+        case 'R' : return 3;
+        case 'Q' : return 4;
+        case 'K' : return 5;
+
+        case 'p' : return 6;
+        case 'n' : return 7;
+        case 'b' : return 8;
+        case 'r' : return 9;
+        case 'q' : return 10;
+        case 'k' : return 11;
+    }
+
+    return -1;
+}
 
 
 static inline void PrintBitboard(uint64_t bitboard) {
@@ -103,4 +127,17 @@ static inline void PrintMoveList() {
 
         std::cout << "  " << moveList->moves[i] << std::endl;
     }
+}
+
+
+static inline std::vector<std::string> SplitString(const std::string input) {
+    std::istringstream stream(input);
+    std::string word;
+    std::vector<std::string> words;
+
+    while (stream >> word) {
+        words.push_back(word);
+    }
+
+    return words;
 }

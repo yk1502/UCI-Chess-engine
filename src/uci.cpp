@@ -6,7 +6,8 @@
 #include "board.h"
 #include "bitboard.h"
 #include "move.h"
-
+#include "utils.h"
+#include "positions.h"
 
 
 void MoveGen(MoveList* moveList);
@@ -14,27 +15,6 @@ void MoveGen(MoveList* moveList);
 bool MakeMove(int move);
 
 
-
-
-static inline int pieceToNum(char piece) {
-    switch (piece) {
-        case 'P' : return 0;
-        case 'N' : return 1;
-        case 'B' : return 2;
-        case 'R' : return 3;
-        case 'Q' : return 4;
-        case 'K' : return 5;
-
-        case 'p' : return 6;
-        case 'n' : return 7;
-        case 'b' : return 8;
-        case 'r' : return 9;
-        case 'q' : return 10;
-        case 'k' : return 11;
-    }
-
-    return -1;
-}
 
 
 void ParseFen(std::string fen) {
@@ -111,7 +91,7 @@ void ParseFen(std::string fen) {
 }
 
 
-int ParseMove(const char* moveInStr) {
+int ParseMove(std::string moveInStr) {
     int sourceSquare = (moveInStr[0] - 'a') + (8 - (moveInStr[1] - '0')) * 8; 
     int targetSquare = (moveInStr[2] - 'a') + (8 - (moveInStr[3] - '0')) * 8; 
 
@@ -146,4 +126,131 @@ int ParseMove(const char* moveInStr) {
 		}
     }
     return 0;
+}
+
+
+void ParseMoves(std::string& moveString) {
+    
+    std::vector<std::string> moveTokens = SplitString(moveString);
+
+    for (size_t i = 0; i < moveTokens.size(); ++i) {
+        int move = ParseMove(moveTokens[i]);
+        MakeMove(move);
+    }
+
+}
+
+
+void HandlePosition(std::string& input) {
+
+    if (input.find("startpos") != std::string::npos) {
+        ParseFen(startPos);
+    } else if (input.find("fen") != std::string::npos) {
+        ParseFen(input.substr(input.find("fen") + 4, std::string::npos));
+    } 
+    
+
+    if (input.find("moves") != std::string::npos) {
+        
+        if (input[input.find("moves") + 6] >= 'a' && input[input.find("moves") + 6] <= 'h') {
+            std::string moveString = input.substr(input.find("moves") + 6, std::string::npos);
+            ParseMoves(moveString);
+        }
+        
+    }
+
+    // PrintBoard();
+}
+
+
+void HandleGo(std::string& input) {
+
+    int maxDepth = 24;
+    int wtime = 8000;
+    int btime = 8000;
+    int winc = 80;
+    int binc = 80;
+
+    std::vector<std::string> splitGo = SplitString(input);
+
+    for (size_t i = 0; i < splitGo.size(); ++i) {
+        if (splitGo[i] == "wtime") {
+            try {
+                wtime = std::stoi(splitGo[i + 1]); 
+            } catch (...) { 
+                std::cout << "Invalid time" << std::endl;
+            }
+        }
+
+        if (splitGo[i] == "btime") {
+            try {
+                btime = std::stoi(splitGo[i + 1]); 
+            } catch (...) { 
+                std::cout << "Invalid time" << std::endl;
+            }
+        }
+
+        if (splitGo[i] == "winc") {
+            try {
+                winc = std::stoi(splitGo[i + 1]); 
+            } catch (...) { 
+                std::cout << "Invalid time" << std::endl;
+            }
+        }
+
+        if (splitGo[i] == "binc") {
+            try {
+                binc = std::stoi(splitGo[i + 1]); 
+            } catch (...) { 
+                std::cout << "Invalid increment" << std::endl;
+            }
+        }
+
+        if (splitGo[i] == "depth") {
+            try {
+                depth = std::stoi(splitGo[i + 1]); 
+            } catch (...) { 
+                std::cout << "Invalid depth" << std::endl;
+            }
+        }
+    }
+
+    
+
+    SearchPosition(maxDepth, wtime, btime, winc, binc);
+
+}
+
+
+
+void UciLoop() {
+    
+    while (true) {
+        std::string input;
+        std::getline(std::cin, input);
+
+        if (input.empty()) {
+            continue;
+        }
+
+        std::vector<std::string> commands = SplitString(input);
+        
+        if (commands[0] == "uci") {
+            std::cout << "id name Shumi" << std::endl;
+            std::cout << "id author ykkk" << std::endl; 
+            std::cout << "uciok" << std::endl; 
+        } else if (commands[0] == "isready") {
+            std::cout << "readyok" << std::endl; 
+        } else if (commands[0] == "quit") {
+            break;
+        } else if (commands[0] == "position") {
+            HandlePosition(input);
+        } else if (commands[0] == "go") {
+            HandleGo(input);
+        } else {
+            std::cout << "Unknown command" << std::endl; 
+        }
+
+    }
+
 }
