@@ -176,6 +176,13 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
     bool isInCheck = IsSquareAttacked(GetLsbIndex(bitboards[(side == white) ? Pieces::K : Pieces::k]), side ^ 1);
 
+    if (!isInCheck && ply) {
+        int eval = Evaluate();
+        if ((eval - 90 * depth >= beta) && (depth <= 7)) {
+            return eval;
+        }
+    }
+
     MoveList moveList[1];
     MoveGen(moveList);
     SortMoves(moveList, ply);
