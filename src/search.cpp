@@ -22,17 +22,15 @@ int QSearch(int alpha, int beta) {
     
     int bestScore = Evaluate();
 
+    nodes++;
+
     if (bestScore > alpha) {
-
-        if (bestScore >= beta) {
-            return bestScore;
-        } 
-
         alpha = bestScore;
-
     }
 
-    nodes++;
+    if (bestScore >= beta) {
+        return bestScore;
+    } 
 
     MoveList moveList[1];
     MoveGen(moveList, true);
@@ -62,7 +60,6 @@ int QSearch(int alpha, int beta) {
                 } 
 
                 alpha = score;
-
             }
 
         }
@@ -77,7 +74,7 @@ int QSearch(int alpha, int beta) {
 int Negamax(int depth, int alpha, int beta, int ply) {
 
     if (depth == 0) {
-        return Evaluate();
+        return QSearch(alpha, beta);
     }
 
     nodes++;
@@ -155,7 +152,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
         int score = Negamax(currDepth, alpha, beta, ply);
 
         // info score cp 2 depth 6 nodes 52805 time 93 pv
-        std::cout << "info score cp " << score << " depth " << currDepth << " nodes " << nodes << std::endl;
+        std::cout << "info score cp " << score << " depth " << currDepth << " nodes " << nodes << " time " << GetTimeMs() - startTime << std::endl;
 
         if (GetTimeMs() - startTime >= moveTime) {
             break;

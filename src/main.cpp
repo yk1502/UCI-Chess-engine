@@ -45,7 +45,7 @@ int main() {
     
     InitAll();
 
-    int debug = 1;
+    int debug = 0;
 
     if (debug) {
 
