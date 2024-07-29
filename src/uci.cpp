@@ -14,6 +14,8 @@ void MoveGen(MoveList* moveList);
 bool MakeMove(int move);
 
 
+
+
 static inline int pieceToNum(char piece) {
     switch (piece) {
         case 'P' : return 0;

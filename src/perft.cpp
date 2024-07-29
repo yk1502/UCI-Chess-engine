@@ -258,8 +258,8 @@ void RunPerft(int maxDepth) {
         std::cout << "depth : " << currDepth << " nodes : " << nodes << " time : " << duration << " nps : " << (static_cast<float>(nodes) / (static_cast<float>(duration) / 1000.0f)) / 1000000.0f << "Mnps" << std::endl;
     }
 
-
 }
+
 
 
 void PerftMoveCount(int depth, int ply = 0) {
@@ -292,12 +292,11 @@ void PerftMoveCount(int depth, int ply = 0) {
         }
 
         TakeBack();
-
     }
 
     return;
-
 }
+
 
 
 void PerftPositions() {
