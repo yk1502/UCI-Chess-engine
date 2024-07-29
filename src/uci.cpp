@@ -8,13 +8,10 @@
 #include "move.h"
 #include "utils.h"
 #include "positions.h"
+#include "makemove.h"
+#include "movegen.h"
+#include "search.h"
 
-
-void MoveGen(MoveList* moveList);
-
-bool MakeMove(int move);
-
-void SearchPosition(int maxDepth, int wtime, int btime, int winc, int binc);
 
 
 
@@ -219,7 +216,7 @@ void HandleGo(std::string& input) {
 
     
 
-    SearchPosition(maxDepth, wtime, btime, winc, binc);
+    SearchPosition(maxDepth, (side == white) ? wtime : btime, (side == white) ? winc : binc);
 
 }
 

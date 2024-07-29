@@ -8,17 +8,16 @@
 #include "board.h"
 #include "move.h"
 #include "utils.h"
-
+#include "positions.h"
+#include "makemove.h"
+#include "movegen.h"
+#include "eval.h"
 
 // init functions
 void InitSliderAttacks();
 void InitMask();
 void InitLeaperAttacks();
 
-
-// move gen functions
-void MoveGen(MoveList* moveList);
-bool MakeMove(int move);
 
 
 // for perft/debugging
@@ -33,6 +32,7 @@ void PerftPositions();
 void UciLoop();
 
 
+
 void InitAll() {
     InitMask();
     InitSliderAttacks();
@@ -44,8 +44,19 @@ void InitAll() {
 int main() {
     
     InitAll();
-        
-    UciLoop();      
 
+    int debug = 0;
+
+    if (debug) {
+
+        ParseFen("rnb1kbnQ/p1pp4/1p3q1p/8/8/8/PPP1PPPP/RNBQKBNR w KQq - 1 6");
+        PrintBoard();
+        int score = Evaluate();
+        std::cout << score << std::endl;
+
+    } else {
+        UciLoop();      
+    }
+    
 }
 
