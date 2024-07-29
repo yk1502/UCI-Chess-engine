@@ -86,7 +86,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     int score = Negamax(3, alpha, beta, ply);
 
     // info score cp 2 depth 6 nodes 52805 time 93 pv
-    std::cout << "info score cp " << score << "depth 3 nodes " << nodes << std::endl;
+    std::cout << "info score cp " << score << " depth 3 nodes " << nodes << std::endl;
 
     std::cout << "bestmove ";
     PrintMove(bestMove);
