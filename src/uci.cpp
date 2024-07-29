@@ -18,8 +18,8 @@
 
 void ParseFen(std::string fen) {
 
-    std::fill(std::begin(bitboards), std::end(bitboards), 0ULL);
-    std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
+    std::memset(bitboards, 0ULL, sizeof(bitboards));
+    std::memset(occupancies, 0ULL, sizeof(occupancies));
     std::fill(std::begin(mailbox), std::end(mailbox), -1);
     side = 0;
     castling = 0;

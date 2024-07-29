@@ -226,12 +226,8 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
 void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
-    for (int i = 0; i < 64; ++i) {
-        pvLength[i] = 0;
-        for (int j = 0; j < 64; ++j) {
-            pvTable[i][j] = 0;
-        }
-    }
+    std::memset(pvLength, 0, sizeof(pvLength));
+    std::memset(pvTable, 0, sizeof(pvTable));
 
     int alpha = -MAX_SCORE;
     int beta = MAX_SCORE;

@@ -192,7 +192,7 @@ bool MakeMove(int move) {
     }
 
     // renewing occupancies
-    std::fill(std::begin(occupancies), std::end(occupancies), 0ULL);
+    std::memset(occupancies, 0ULL, sizeof(occupancies));
 
     for (int i = 0; i < 6; ++i) {
         occupancies[white] |= bitboards[i];
