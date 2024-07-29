@@ -7,6 +7,15 @@
 
 
 
+
+
+void AddMove(MoveList* moveList, int encodedMove) {
+    moveList->moves[moveList->count] = encodedMove;
+    moveList->count++;
+}
+
+
+
 bool MakeMove(int move) {
     // the make move function is structed as :
 

@@ -9,9 +9,7 @@
 #include "attacks.h"
 #include "board.h"
 #include "move.h"
-
-
-void MoveGen(MoveList* moveList);
+#include "movegen.h"
 
 
 

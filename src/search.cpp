@@ -4,11 +4,7 @@
 #include "move.h"
 #include "board.h"
 #include "utils.h"
-
-
-void MoveGen(MoveList* moveList);
-
-bool MakeMove(int move);
+#include "makemove.h"
 
 
 
@@ -28,7 +24,7 @@ void SearchPosition(int maxDepth, int wtime, int btime, int winc, int binc) {
         }
 
         TakeBack();
-
+        std::cout << "info score cp 0" << std::endl;
         std::cout << "bestmove ";
         PrintMove(moveList->moves[i]);
         std::cout << std::endl;
