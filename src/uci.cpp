@@ -14,6 +14,8 @@ void MoveGen(MoveList* moveList);
 
 bool MakeMove(int move);
 
+void SearchPosition(int maxDepth, int wtime, int btime, int winc, int binc);
+
 
 
 
@@ -208,7 +210,7 @@ void HandleGo(std::string& input) {
 
         if (splitGo[i] == "depth") {
             try {
-                depth = std::stoi(splitGo[i + 1]); 
+                maxDepth = std::stoi(splitGo[i + 1]); 
             } catch (...) { 
                 std::cout << "Invalid depth" << std::endl;
             }
