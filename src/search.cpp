@@ -13,6 +13,9 @@
 int bestMove = 0;
 static int nodes = 0;
 
+static uint64_t startTime = 0;
+static uint64_t moveTime = 0;
+
 
 int Negamax(int depth, int alpha, int beta, int ply) {
 
@@ -41,6 +44,12 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         int score = -Negamax(depth - 1, -beta, -alpha, ply + 1);
 
+        TakeBack();
+
+        if (GetTimeMs() - startTime >= moveTime) {
+            return 0;
+        }
+
         if (score > bestScore) {
             bestScore = score;
 
@@ -60,8 +69,6 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         }
 
-        TakeBack();
-
     }
 
     if (totalMoves == 0) {
@@ -80,16 +87,29 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     int alpha = -MAX_SCORE;
     int beta = MAX_SCORE;
 
+    startTime = GetTimeMs();
+    moveTime = (timeLeft / 20) + (timeInc / 2);
+
     int ply = 0;
+    int bestMoveCurrIter = 0;
     nodes = 0;
 
-    int score = Negamax(3, alpha, beta, ply);
+    for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
+        int score = Negamax(currDepth, alpha, beta, ply);
 
-    // info score cp 2 depth 6 nodes 52805 time 93 pv
-    std::cout << "info score cp " << score << " depth 3 nodes " << nodes << std::endl;
+        // info score cp 2 depth 6 nodes 52805 time 93 pv
+        std::cout << "info score cp " << score << " depth " << currDepth << " nodes " << nodes << std::endl;
+
+        if (GetTimeMs() - startTime >= moveTime) {
+            break;
+        }
+
+        bestMoveCurrIter = bestMove;
+    }
+    
 
     std::cout << "bestmove ";
-    PrintMove(bestMove);
+    PrintMove(bestMoveCurrIter);
     std::cout << std::endl;
     
 }

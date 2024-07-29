@@ -165,8 +165,8 @@ void HandlePosition(std::string& input) {
 void HandleGo(std::string& input) {
 
     int maxDepth = 24;
-    int wtime = 8000;
-    int btime = 8000;
+    int wtime = 800000000;
+    int btime = 800000000;
     int winc = 80;
     int binc = 80;
 
