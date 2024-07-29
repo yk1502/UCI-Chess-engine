@@ -183,6 +183,10 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         }
     }
 
+    if (isInCheck) {
+        depth++;
+    }
+
     MoveList moveList[1];
     MoveGen(moveList);
     SortMoves(moveList, ply);
