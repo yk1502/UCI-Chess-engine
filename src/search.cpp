@@ -25,6 +25,7 @@ int pvTable[64][64];
 int pvLength[64];
 
 int killerMoves[64][2];
+int historyMoves[12][64];
 
 
 static int MVVLVA[12][12] = {
@@ -100,8 +101,10 @@ static inline int ScoreMoves(int move, int ply) {
         } else if (killerMoves[ply][1] == move) {
             //return 0;
             return 8000;
-        } 
-        return 0;   
+        } else {
+            return 0;//historyMoves[GetMovePiece(move)][GetMoveTarget(move)];
+        }
+        //return 0;   
     }
 }
 
@@ -131,11 +134,13 @@ static inline void SortMoves(MoveList* moveList, int ply) {
 
 
 
-int QSearch(int alpha, int beta) {
+int QSearch(int alpha, int beta, int ply) {
     
     int bestScore = Evaluate();
 
-    nodes++;
+    if (ply > 60) {
+        return bestScore;
+    }
 
     if (bestScore >= beta) {
         return bestScore;
@@ -145,6 +150,7 @@ int QSearch(int alpha, int beta) {
         alpha = bestScore;
     }
 
+    nodes++;
     MoveList moveList[1];
     MoveGen(moveList, true);
     SortMoves(moveList, -1);
@@ -156,7 +162,7 @@ int QSearch(int alpha, int beta) {
             continue;
         }
 
-        int score = -QSearch(-beta, -alpha);
+        int score = -QSearch(-beta, -alpha, ply + 1);
 
         TakeBack();
         repIndex--;
@@ -166,13 +172,13 @@ int QSearch(int alpha, int beta) {
             return 0;
         }
 
-        if (score > bestScore) {
-            bestScore = score;
-        }
-
         if (score >= beta) {
             return score;
         } 
+
+        if (score > bestScore) {
+            bestScore = score;
+        }
 
         if (score > alpha) {
             alpha = score;
@@ -184,13 +190,13 @@ int QSearch(int alpha, int beta) {
 }
 
 
-template <bool isPv>
-int Negamax(int depth, int alpha, int beta, int ply) {
+
+int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
 
     pvLength[ply] = ply;
 
     if (depth == 0) {
-        return QSearch(alpha, beta);
+        return QSearch(alpha, beta, ply);
     }
 
     if (IsRepetition() && ply) {
@@ -203,10 +209,9 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         return ttScore;
     }
 
-    nodes++;
-
+    
     bool isInCheck = IsSquareAttacked(GetLsbIndex(bitboards[(side == white) ? Pieces::K : Pieces::k]), side ^ 1);
-    const int oldAlpha = alpha;
+    
 
     if (!isInCheck && !isPv) {
         int eval = Evaluate();
@@ -214,6 +219,8 @@ int Negamax(int depth, int alpha, int beta, int ply) {
             return eval;
         }
     }
+
+    nodes++;
 
     if (isInCheck) {
         depth++;
@@ -223,10 +230,11 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     MoveGen(moveList);
     SortMoves(moveList, ply);
     
+    const int oldAlpha = alpha;
     int bestScore = -MAX_SCORE;
     int bestMove = 0;
     int totalMoves = 0;
-    int score;
+    
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         CopyBoard()
@@ -239,16 +247,14 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         
         if ((totalMoves == 1) && isPv) {
-            score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
+            int score; = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
         } else {
-            score = -Negamax<false>(depth - 1, -alpha - 1, -alpha, ply + 1);
+            score = -Negamax(depth - 1, -alpha - 1, -alpha, ply + 1, false);
 
             if ((score > alpha) && (score < beta)) {
-                score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
+                score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
             }
         }
-
-        
 
         TakeBack();
         repIndex--;
@@ -260,36 +266,39 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         if (score > bestScore) {
             bestScore = score;
-            
+        }
 
-            if (score > alpha) {
-                bestMove = moveList->moves[moveCount];
-                alpha = score;
+        if (score > alpha) {
+            bestMove = moveList->moves[moveCount];
+            alpha = score;
 
-                pvTable[ply][ply] = moveList->moves[moveCount];
-                for (int nextPly = ply + 1; nextPly < pvLength[ply + 1]; nextPly++) {
-                    pvTable[ply][nextPly] = pvTable[ply + 1][nextPly];
-                }
-                pvLength[ply] = pvLength[ply + 1];
-
-                if (score >= beta) {
-                    if (!GetMoveCapture(moveList->moves[moveCount])) {
-                        killerMoves[ply][1] = killerMoves[ply][0];
-                        killerMoves[ply][0] = moveList->moves[moveCount];
-                    }
-
-                    StoreTTEntry(depth, LOWERBOUND, score, bestMove, ply);
-                    return score;
-                } 
+            pvTable[ply][ply] = moveList->moves[moveCount];
+            for (int nextPly = ply + 1; nextPly < pvLength[ply + 1]; nextPly++) {
+                pvTable[ply][nextPly] = pvTable[ply + 1][nextPly];
             }
+            pvLength[ply] = pvLength[ply + 1];
 
+            if (score >= beta) {
+                if (!GetMoveCapture(moveList->moves[moveCount])) {
+                    killerMoves[ply][1] = killerMoves[ply][0];
+                    killerMoves[ply][0] = moveList->moves[moveCount];
+
+                    historyMoves[GetMovePiece(moveList->moves[moveCount])][GetMoveTarget(moveList->moves[moveCount])] += depth * depth;
+                }
+
+                StoreTTEntry(depth, LOWERBOUND, score, bestMove, ply);
+                return score;
+            } 
         }
 
     }
 
     if (totalMoves == 0) {
-        if (isInCheck) {return -MATE_SCORE + ply;}
-        if (!isInCheck) {return 0;}
+        if (isInCheck) {
+            return -MATE_SCORE + ply;
+        } else {
+            return 0;
+        }
     }
 
 
@@ -310,6 +319,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     std::memset(pvLength, 0, sizeof(pvLength));
     std::memset(pvTable, 0, sizeof(pvTable));
     std::memset(killerMoves, 0, sizeof(killerMoves));
+    std::memset(historyMoves, 0, sizeof(historyMoves));
 
     int alpha = -MAX_SCORE;
     int beta = MAX_SCORE;
@@ -320,7 +330,6 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     int ply = 0;
     int bestMoveCurrIter = 0;
     int score = 0;
-    int delta = 40;
     bool doAspiration = true;
 
     stopEarly = false;
@@ -329,11 +338,11 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
 
         if (currDepth >= 3 && doAspiration) {
-            alpha = score - delta;
-            beta = score + delta;
+            alpha = score - 40;
+            beta = score + 40;
         }
 
-        score = Negamax<true>(currDepth, alpha, beta, ply);
+        score = Negamax(currDepth, alpha, beta, ply, true);
 
         if (!((score > alpha) && (score < beta))) {
             alpha = -MAX_SCORE;

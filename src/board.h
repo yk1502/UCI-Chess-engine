@@ -43,13 +43,14 @@ static constexpr int castlingRights[64] = {
 
 
 #define CopyBoard()                                                                      \
-    uint64_t c_bitboards[12], c_occupancies[3], c_mailbox[64], c_hashKey;                \
+    uint64_t c_bitboards[12], c_occupancies[3], c_hashKey; \
+    int c_mailbox[64];               \
     int c_enpassantSquare, c_side, c_castling;                                           \
     c_enpassantSquare = enpassantSquare, c_side = side, c_castling = castling;           \
     std::copy(std::begin(bitboards), std::end(bitboards), std::begin(c_bitboards));      \
     std::copy(std::begin(occupancies), std::end(occupancies), std::begin(c_occupancies));\
     std::copy(std::begin(mailbox), std::end(mailbox), std::begin(c_mailbox));            \
-    c_hashKey = hashKey;
+    c_hashKey = hashKey;             
 
 
 
