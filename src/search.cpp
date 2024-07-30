@@ -262,12 +262,30 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
     int ply = 0;
     int bestMoveCurrIter = 0;
+    int score = 0;
+    int delta = 40;
+    bool doAspiration = true;
 
     stopEarly = false;
     nodes = 0;
 
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
-        int score = Negamax(currDepth, alpha, beta, ply);
+        score = Negamax(currDepth, alpha, beta, ply);
+
+        if (currDepth >= 3 && doAspiration) {
+            alpha = score - delta;
+            beta = score + delta;
+        }
+
+        if ((score <= alpha) || (score >= beta)) {
+            alpha = -MAX_SCORE;
+            beta = MAX_SCORE;
+            currDepth--;
+            doAspiration = false;
+            continue;
+        }
+
+        doAspiration = true;
 
         if (!stopEarly) {
             bestMoveCurrIter = pvTable[0][0];
