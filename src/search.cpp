@@ -323,7 +323,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
         score = Negamax(currDepth, alpha, beta, ply);
 
-        if ((score <= alpha) || (score >= beta)) {
+        if (((score <= alpha) || (score >= beta)) && doAspiration) {
             alpha = -MAX_SCORE;
             beta = MAX_SCORE;
             currDepth--;
