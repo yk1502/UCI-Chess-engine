@@ -137,13 +137,13 @@ int QSearch(int alpha, int beta) {
 
     nodes++;
 
-    if (bestScore > alpha) {
-        alpha = bestScore;
-    }
-
     if (bestScore >= beta) {
         return bestScore;
     } 
+
+    if (bestScore > alpha) {
+        alpha = bestScore;
+    }
 
     MoveList moveList[1];
     MoveGen(moveList, true);
@@ -162,21 +162,20 @@ int QSearch(int alpha, int beta) {
         repIndex--;
 
         if (GetTimeMs() - startTime >= moveTime) {
+            stopEarly = true;
             return 0;
         }
 
         if (score > bestScore) {
             bestScore = score;
+        }
 
-            if (score > alpha) {
+        if (score >= beta) {
+            return score;
+        } 
 
-                if (score >= beta) {
-                    return score;
-                } 
-
-                alpha = score;
-            }
-
+        if (score > alpha) {
+            alpha = score;
         }
 
     }
@@ -185,7 +184,7 @@ int QSearch(int alpha, int beta) {
 }
 
 
-
+template <bool isPv>
 int Negamax(int depth, int alpha, int beta, int ply) {
 
     pvLength[ply] = ply;
@@ -200,7 +199,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
     // 8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - - 0 1
     int ttScore = ProbeTT(depth, ply, alpha, beta);
-    if (ttScore != NO_TT && ply) {
+    if (!isPv && (ttScore != NO_TT)) {
         return ttScore;
     }
 
@@ -209,7 +208,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     bool isInCheck = IsSquareAttacked(GetLsbIndex(bitboards[(side == white) ? Pieces::K : Pieces::k]), side ^ 1);
     const int oldAlpha = alpha;
 
-    if (!isInCheck && ply) {
+    if (!isInCheck && !isPv) {
         int eval = Evaluate();
         if ((eval - 90 * depth >= beta) && (depth <= 7)) {
             return eval;
@@ -227,6 +226,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     int bestScore = -MAX_SCORE;
     int bestMove = 0;
     int totalMoves = 0;
+    int score;
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         CopyBoard()
@@ -237,7 +237,18 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         totalMoves++;
 
-        int score = -Negamax(depth - 1, -beta, -alpha, ply + 1);
+        
+        if ((totalMoves == 1) && isPv) {
+            score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
+        } else {
+            score = -Negamax<false>(depth - 1, -alpha - 1, -alpha, ply + 1);
+
+            if ((score > alpha) && (score < beta)) {
+                score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
+            }
+        }
+
+        
 
         TakeBack();
         repIndex--;
@@ -249,6 +260,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
         if (score > bestScore) {
             bestScore = score;
+            
 
             if (score > alpha) {
                 bestMove = moveList->moves[moveCount];
@@ -321,9 +333,9 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
             beta = score + delta;
         }
 
-        score = Negamax(currDepth, alpha, beta, ply);
+        score = Negamax<true>(currDepth, alpha, beta, ply);
 
-        if (((score <= alpha) || (score >= beta)) && doAspiration) {
+        if (!((score > alpha) && (score < beta))) {
             alpha = -MAX_SCORE;
             beta = MAX_SCORE;
             currDepth--;
@@ -342,7 +354,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
         for (int count = 0; count < pvLength[0]; ++count) {
             PrintMove(pvTable[0][count]);
-             std::cout << " ";
+            std::cout << " ";
         }
 
         std::cout << std::endl;
