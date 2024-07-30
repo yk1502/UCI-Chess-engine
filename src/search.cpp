@@ -102,7 +102,7 @@ static inline int ScoreMoves(int move, int ply) {
             //return 0;
             return 8000;
         } else {
-            return 0;//historyMoves[GetMovePiece(move)][GetMoveTarget(move)];
+            return historyMoves[GetMovePiece(move)][GetMoveTarget(move)];
         }
         //return 0;   
     }
@@ -234,7 +234,7 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
     int bestScore = -MAX_SCORE;
     int bestMove = 0;
     int totalMoves = 0;
-    
+    int score;
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
         CopyBoard()
@@ -244,10 +244,10 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
         }
 
         totalMoves++;
-
+        
         
         if ((totalMoves == 1) && isPv) {
-            int score; = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
+            score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
         } else {
             score = -Negamax(depth - 1, -alpha - 1, -alpha, ply + 1, false);
 
@@ -255,7 +255,7 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
                 score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
             }
         }
-
+        
         TakeBack();
         repIndex--;
 
