@@ -21,6 +21,10 @@ int enpassantSquare = Squares::noSquare;
 
 uint64_t hashKey = 0ULL;
 
+uint64_t repHistory[1500];
+
+int repIndex = 0;
+
 
 
 

@@ -44,6 +44,18 @@ static int MVVLVA[12][12] = {
 
 
 
+
+static inline bool IsRepetition() {
+    for (int index = 0; index < repIndex; ++index) {
+        if (hashKey == repHistory[index]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
 static inline int ScoreMoves(int move, int ply) {
 
     int startPiece, endPiece;
@@ -138,6 +150,7 @@ int QSearch(int alpha, int beta) {
         int score = -QSearch(-beta, -alpha);
 
         TakeBack();
+        repIndex--;
 
         if (GetTimeMs() - startTime >= moveTime) {
             return 0;
@@ -170,6 +183,10 @@ int Negamax(int depth, int alpha, int beta, int ply) {
 
     if (depth == 0) {
         return QSearch(alpha, beta);
+    }
+
+    if (IsRepetition() && ply) {
+        return 0;
     }
 
     nodes++;
@@ -206,6 +223,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         int score = -Negamax(depth - 1, -beta, -alpha, ply + 1);
 
         TakeBack();
+        repIndex--;
 
         if (GetTimeMs() - startTime >= moveTime) {
             stopEarly = true;
@@ -253,6 +271,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
     std::memset(pvLength, 0, sizeof(pvLength));
     std::memset(pvTable, 0, sizeof(pvTable));
+    std::memset(killerMoves, 0, sizeof(killerMoves));
 
     int alpha = -MAX_SCORE;
     int beta = MAX_SCORE;

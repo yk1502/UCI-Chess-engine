@@ -11,6 +11,7 @@
 #include "makemove.h"
 #include "movegen.h"
 #include "search.h"
+#include "tt.h"
 
 
 
@@ -20,7 +21,10 @@ void ParseFen(std::string fen) {
 
     std::memset(bitboards, 0ULL, sizeof(bitboards));
     std::memset(occupancies, 0ULL, sizeof(occupancies));
+    std::memset(repHistory, 0ULL, sizeof(repHistory));
     std::fill(std::begin(mailbox), std::end(mailbox), -1);
+    repIndex = 0;
+    
     side = 0;
     castling = 0;
     enpassantSquare = Squares::noSquare;
@@ -86,6 +90,7 @@ void ParseFen(std::string fen) {
     }
 
     occupancies[both] = occupancies[white] | occupancies[black];
+    hashKey = GeneratePosKey();
     
 }
 

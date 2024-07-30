@@ -12,6 +12,7 @@
 #include "makemove.h"
 #include "movegen.h"
 #include "eval.h"
+#include "tt.h"
 
 // init functions
 void InitSliderAttacks();
@@ -37,6 +38,7 @@ void InitAll() {
     InitMask();
     InitSliderAttacks();
     InitLeaperAttacks();
+    InitPosKeys();
 }
 
 
@@ -48,11 +50,9 @@ int main() {
     int debug = 0;
 
     if (debug) {
-        ParseFen("3rr1k1/ppp1qppp/2nbbn2/3pp3/P7/8/RPPPPPPP/1NBQKBNR b K - 17 11");
-        PrintBoard();
-
-        std::cout << Evaluate() << std::endl;
-
+        ParseFen(startPos);
+        
+        RunPerft(5);
     } else {
         UciLoop();      
     }

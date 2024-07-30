@@ -4,7 +4,8 @@
 #include "move.h"
 #include "bitboard.h"
 #include "attacks.h"
-
+#include "tt.h"
+#include "utils.h"
 
 
 
@@ -56,6 +57,9 @@ bool MakeMove(int move) {
     int isCastling = GetMoveCastling(move);
     int isDouble = GetMoveDouble(move);
     int isPromotion = GetMovePromotion(move);
+
+    hashKey ^= pieceKeys[piece][sourceSquare];
+	hashKey ^= pieceKeys[piece][targetSquare];
     
     int pawnMarchOne = (side == white) ? Directions::up : Directions::down;
     
@@ -65,6 +69,7 @@ bool MakeMove(int move) {
     // and handle the rest in their own if else statements lol, but idc
 
     if (!isEnpassant && enpassantSquare != Squares::noSquare) {
+        hashKey ^= enpassantKeys[enpassantSquare % 8];
         enpassantSquare = Squares::noSquare;
     }
 
@@ -98,21 +103,29 @@ bool MakeMove(int move) {
                 SetBit(&bitboards[Pieces::R], Squares::f1);
                 mailbox[Squares::h1] = -1;
                 mailbox[Squares::f1] = Pieces::R;
+                hashKey ^= pieceKeys[Pieces::R][Squares::h1];
+                hashKey ^= pieceKeys[Pieces::R][Squares::f1];
             } else if (targetSquare == Squares::c1) { // white queen side
                 PopBit(&bitboards[Pieces::R], Squares::a1);
                 SetBit(&bitboards[Pieces::R], Squares::d1);
                 mailbox[Squares::a1] = -1;
                 mailbox[Squares::d1] = Pieces::R;
+                hashKey ^= pieceKeys[Pieces::R][Squares::a1];
+                hashKey ^= pieceKeys[Pieces::R][Squares::d1];
             } else if (targetSquare == Squares::g8) { // black king side
                 PopBit(&bitboards[Pieces::r], Squares::h8);
                 SetBit(&bitboards[Pieces::r], Squares::f8);
                 mailbox[Squares::h8] = -1;
                 mailbox[Squares::f8] = Pieces::r;
+                hashKey ^= pieceKeys[Pieces::r][Squares::h8];
+                hashKey ^= pieceKeys[Pieces::r][Squares::f8];
             } else {                                  // black queen side
                 PopBit(&bitboards[Pieces::r], Squares::a8);
                 SetBit(&bitboards[Pieces::r], Squares::d8);
                 mailbox[Squares::a8] = -1;
                 mailbox[Squares::d8] = Pieces::r;
+                hashKey ^= pieceKeys[Pieces::r][Squares::a8];
+                hashKey ^= pieceKeys[Pieces::r][Squares::d8];
             }
         } else if (isDouble) {
             // now let's handle double moves
@@ -128,6 +141,7 @@ bool MakeMove(int move) {
 
             if (GetPawnAttacks(sourceSquare + pawnMarchOne, side) & bitboards[otherSide * 6]) {
                 enpassantSquare = sourceSquare + pawnMarchOne;
+                hashKey ^= enpassantKeys[enpassantSquare % 8];
             }
         }
 
@@ -143,6 +157,7 @@ bool MakeMove(int move) {
             // after moving the piece to the targetSquare, we have to pop the 
             // captured piece out of the bitboard too !
             PopBit(&bitboards[mailbox[targetSquare]], targetSquare);
+            hashKey ^= pieceKeys[mailbox[targetSquare]][targetSquare];
             mailbox[sourceSquare] = -1;
             mailbox[targetSquare] = piece;
 
@@ -150,11 +165,14 @@ bool MakeMove(int move) {
             // now let's handle enpassant
             PopBit(&bitboards[piece], sourceSquare);
             SetBit(&bitboards[piece], targetSquare);
+            
+			
             mailbox[sourceSquare] = -1;
             mailbox[targetSquare] = piece;
 
             // same thing, we need to pop out the pawn that is right above the enpassant square
             PopBit(&bitboards[otherSide * 6], enpassantSquare - pawnMarchOne);
+            hashKey ^= pieceKeys[otherSide * 6][enpassantSquare - pawnMarchOne];
             mailbox[enpassantSquare - pawnMarchOne] = -1;
         }
 
@@ -174,8 +192,12 @@ bool MakeMove(int move) {
         // but if its a capture promotion, we need to pop out the original piece
         // on that target square too
         if (isCapture) {
+            hashKey ^= pieceKeys[mailbox[targetSquare]][targetSquare];
             PopBit(&bitboards[mailbox[targetSquare]], targetSquare);
         }
+
+        hashKey ^= pieceKeys[(side) * 6][targetSquare];
+		hashKey ^= pieceKeys[isPromotion][targetSquare];
 
         mailbox[targetSquare] = isPromotion;
         
@@ -188,6 +210,7 @@ bool MakeMove(int move) {
 
     // enpassant square
     if (isEnpassant) {
+        hashKey ^= enpassantKeys[enpassantSquare % 8];
         enpassantSquare = Squares::noSquare;
     }
 
@@ -211,17 +234,32 @@ bool MakeMove(int move) {
     }
 
     // renewing castling rights
+    hashKey ^= castleKeys[castling];
     castling &= castlingRights[sourceSquare];
 	castling &= castlingRights[targetSquare];
+    hashKey ^= castleKeys[castling];
 
     
     
 
     // flipping side
     side ^= 1;
+    hashKey ^= sideKeys;
 
-    
+    /*
+    uint64_t oriHashKey = GeneratePosKey();
+
+	if (hashKey != oriHashKey) {
+		PrintBoard();
+		PrintMove(move);
+		printf("\nhash key should be : %llu\n", oriHashKey);
+		getchar();
+	}
+    */
 
     // return true if its legal
+    repIndex++;
+    repHistory[repIndex] = hashKey;
+   
     return true;
 }
