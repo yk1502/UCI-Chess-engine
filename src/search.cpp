@@ -218,6 +218,29 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
         if ((eval - 90 * depth >= beta) && (depth <= 7)) {
             return eval;
         }
+
+        if (depth >= 3) {
+            CopyBoard();
+
+            side ^= 1;
+            hashKey ^= sideKeys;
+
+            if (enpassantSquare != Squares::noSquare) {hashKey ^= enpassantKeys[enpassantSquare % 8];}
+            enpassantSquare = Squares::noSquare;
+
+            repIndex++;
+            repHistory[repIndex] = hashKey;
+
+            int score = -Negamax(depth - 3, -beta, -beta + 1, ply + 1, false);
+            
+            TakeBack();
+            repIndex--;
+            
+            if (score >= beta) {
+                return score;
+            }
+        }
+
     }
 
     nodes++;
@@ -337,7 +360,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
 
-        if (currDepth >= 3 && doAspiration) {
+        if (currDepth >= 7 && doAspiration) {
             alpha = score - 40;
             beta = score + 40;
         }
