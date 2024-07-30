@@ -198,6 +198,12 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         return 0;
     }
 
+    // 8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - - 0 1
+    int ttScore = ProbeTT(depth, ply, alpha, beta);
+    if (ttScore != NO_TT && ply) {
+        return ttScore;
+    }
+
     nodes++;
 
     bool isInCheck = IsSquareAttacked(GetLsbIndex(bitboards[(side == white) ? Pieces::K : Pieces::k]), side ^ 1);
