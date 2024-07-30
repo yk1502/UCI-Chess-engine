@@ -10,6 +10,7 @@
 #include "search.h"
 #include "eval.h"
 #include "move.h"
+#include "tt.h"
 
 
 
@@ -59,6 +60,14 @@ static inline bool IsRepetition() {
 static inline int ScoreMoves(int move, int ply) {
 
     int startPiece, endPiece;
+
+    ttEntry* entry = &tt[Index()];
+    if (   entry->flag != NO_FLAG
+        && entry->hashKey == hashKey 
+        && move == entry->move) {
+        return 50000;
+    }
+
 
     if (GetMoveCapture(move)) {
 
@@ -192,6 +201,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     nodes++;
 
     bool isInCheck = IsSquareAttacked(GetLsbIndex(bitboards[(side == white) ? Pieces::K : Pieces::k]), side ^ 1);
+    const int oldAlpha = alpha;
 
     if (!isInCheck && ply) {
         int eval = Evaluate();
@@ -209,6 +219,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     SortMoves(moveList, ply);
     
     int bestScore = -MAX_SCORE;
+    int bestMove = 0;
     int totalMoves = 0;
 
     for (int moveCount = 0; moveCount < moveList->count; ++moveCount) {
@@ -234,7 +245,7 @@ int Negamax(int depth, int alpha, int beta, int ply) {
             bestScore = score;
 
             if (score > alpha) {
-
+                bestMove = moveList->moves[moveCount];
                 alpha = score;
 
                 pvTable[ply][ply] = moveList->moves[moveCount];
@@ -248,6 +259,8 @@ int Negamax(int depth, int alpha, int beta, int ply) {
                         killerMoves[ply][1] = killerMoves[ply][0];
                         killerMoves[ply][0] = moveList->moves[moveCount];
                     }
+
+                    StoreTTEntry(depth, LOWERBOUND, score, bestMove, ply);
                     return score;
                 } 
             }
@@ -259,6 +272,13 @@ int Negamax(int depth, int alpha, int beta, int ply) {
     if (totalMoves == 0) {
         if (isInCheck) {return -MATE_SCORE + ply;}
         if (!isInCheck) {return 0;}
+    }
+
+
+    if (alpha != oldAlpha) {
+        StoreTTEntry(depth, EXACT, bestScore, bestMove, ply);
+    } else {
+        StoreTTEntry(depth, UPPERBOUND, bestScore, bestMove, ply);
     }
 
     return bestScore;

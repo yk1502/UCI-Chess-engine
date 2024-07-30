@@ -252,6 +252,7 @@ void UciLoop() {
         } else if (commands[0] == "go") {
             HandleGo(input);
         } else if (commands[0] == "ucinewgame") {
+            ClearTT();
             ParseFen(startPos);
         } else {
             std::cout << "Unknown command" << std::endl; 
