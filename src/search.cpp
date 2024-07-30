@@ -270,12 +270,13 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     nodes = 0;
 
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
-        score = Negamax(currDepth, alpha, beta, ply);
 
         if (currDepth >= 3 && doAspiration) {
             alpha = score - delta;
             beta = score + delta;
         }
+
+        score = Negamax(currDepth, alpha, beta, ply);
 
         if ((score <= alpha) || (score >= beta)) {
             alpha = -MAX_SCORE;
