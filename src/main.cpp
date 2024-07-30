@@ -48,14 +48,10 @@ int main() {
     int debug = 0;
 
     if (debug) {
+        ParseFen("3rr1k1/ppp1qppp/2nbbn2/3pp3/P7/8/RPPPPPPP/1NBQKBNR b K - 17 11");
+        PrintBoard();
 
-        int arrayTest[2][2] = {{1, 41}, {43, 12313213}};
-
-        std::memset(arrayTest, 0, sizeof(arrayTest));
-
-        std::cout << arrayTest[0][0] << arrayTest[1][0] << std::endl;
-        std::cout << arrayTest[0][1] << arrayTest[1][1] << std::endl;
-        //PerftPositions();
+        std::cout << Evaluate() << std::endl;
 
     } else {
         UciLoop();      
