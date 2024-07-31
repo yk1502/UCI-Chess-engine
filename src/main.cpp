@@ -33,12 +33,18 @@ void PerftPositions();
 void UciLoop();
 
 
+// pesto
+
+void InitTables();
+
+
 
 void InitAll() {
     InitMask();
     InitSliderAttacks();
     InitLeaperAttacks();
     InitPosKeys();
+    InitTables();
 }
 
 
