@@ -145,7 +145,7 @@ void ParseMoves(std::string& moveString) {
 }
 
 
-void HandlePosition(std::string& input) {
+void HandlePosition(std::string input) {
 
     if (input.find("startpos") != std::string::npos) {
         ParseFen(startPos);
@@ -167,11 +167,11 @@ void HandlePosition(std::string& input) {
 }
 
 
-void HandleGo(std::string& input) {
+void HandleGo(std::string input) {
 
     int maxDepth = 64;
-    int wtime = 800000000;
-    int btime = 800000000;
+    int wtime = 500;
+    int btime = 500;
     int winc = 80;
     int binc = 80;
 
