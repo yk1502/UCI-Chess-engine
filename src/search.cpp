@@ -215,8 +215,8 @@ int QSearch(int alpha, int beta, int ply) {
 }
 
 
-
-int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
+template <bool isPv>
+int Negamax(int depth, int alpha, int beta, int ply) {
 
     pvLength[ply] = ply;
 
@@ -298,13 +298,13 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
         
         
         if ((totalMoves == 1) && isPv) {
-            score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
+            score = -<true>Negamax(depth - 1, -beta, -alpha, ply + 1);
         } else {
             
-            score = -Negamax(depth - 1, -alpha - 1, -alpha, ply + 1, false);
+            score = -<false>Negamax(depth - 1, -alpha - 1, -alpha, ply + 1);
 
             if ((score > alpha) && (score < beta)) {
-                score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
+                score = -<true>Negamax(depth - 1, -beta, -alpha, ply + 1);
             }
         }
         
@@ -399,7 +399,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
             beta = score + 40;
         }
 
-        score = Negamax(currDepth, alpha, beta, ply, true);
+        score = <true>Negamax(currDepth, alpha, beta, ply, true);
 
         if (!((score > alpha) && (score < beta))) {
             alpha = -MAX_SCORE;
