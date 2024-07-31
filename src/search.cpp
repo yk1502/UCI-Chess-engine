@@ -58,6 +58,32 @@ static inline bool IsRepetition() {
 
 
 
+static inline void UpdateHHScores(int bonus, int move) {
+    int scaledBonus = bonus - historyMoves[GetMovePiece(move)][GetMoveTarget(move)] * std::abs(bonus) / 8192;
+    historyMoves[GetMovePiece(move)][GetMoveTarget(move)] += scaledBonus;
+}
+
+
+
+static inline void UpdateHHMoves(int depth, MoveList* quietMoves, int bestMove) {
+    int bonus = std::min(depth * depth, 1200);
+
+    if (!GetMoveCapture(bestMove)) {
+        UpdateHHScores(bonus, bestMove);
+
+        for (int moveCount = 0; moveCount < quietMoves->count; ++moveCount) {
+            if (quietMoves->moves[moveCount] == bestMove) {
+                continue;
+            }
+
+            UpdateHHScores(-bonus, quietMoves->moves[moveCount]);
+        
+        }
+    }
+}
+
+
+
 static inline int ScoreMoves(int move, int ply) {
 
     int startPiece, endPiece;
@@ -66,7 +92,7 @@ static inline int ScoreMoves(int move, int ply) {
     if (   entry->flag != NO_FLAG
         && entry->hashKey == hashKey 
         && move == entry->move) {
-        return 50000;
+        return 500000;
     }
 
 
@@ -93,14 +119,14 @@ static inline int ScoreMoves(int move, int ply) {
             }
         }
 
-        return MVVLVA[sourcePiece][targetPiece] + 10000;
+        return MVVLVA[sourcePiece][targetPiece] + 400000;
     } else {
         if (killerMoves[ply][0] == move) {
             //return 0;
-            return 9000;
+            return 300000;
         } else if (killerMoves[ply][1] == move) {
             //return 0;
-            return 8000;
+            return 200000;
         } else {
             return historyMoves[GetMovePiece(move)][GetMoveTarget(move)];
         }
@@ -242,13 +268,6 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
             }
         }
 
-        if (depth <= 5 && eval + 256 * depth < alpha) {
-            const int razorScore = QSearch(alpha, beta, ply);
-            if (razorScore <= alpha) {
-                return razorScore;
-            }
-        }
-        
 
     }
 
@@ -259,6 +278,7 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
     }
 
     MoveList moveList[1];
+    MoveList quietMoves[1];
     MoveGen(moveList);
     SortMoves(moveList, ply);
     
@@ -292,6 +312,10 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
         TakeBack();
         repIndex--;
 
+        if (!GetMoveCapture(moveList->moves[moveCount])) {
+            AddMove(quietMoves, moveList->moves[moveCount]);
+        }
+
         if (GetTimeMs() - startTime >= moveTime) {
             stopEarly = true;
             return 0;
@@ -315,10 +339,9 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
                 if (!GetMoveCapture(moveList->moves[moveCount])) {
                     killerMoves[ply][1] = killerMoves[ply][0];
                     killerMoves[ply][0] = moveList->moves[moveCount];
-
-                    historyMoves[GetMovePiece(moveList->moves[moveCount])][GetMoveTarget(moveList->moves[moveCount])] += depth * depth;
                 }
 
+                UpdateHHMoves(depth, quietMoves, bestMove);
                 StoreTTEntry(depth, LOWERBOUND, score, bestMove, ply);
                 return score;
             } 
