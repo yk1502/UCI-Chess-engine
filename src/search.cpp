@@ -66,20 +66,19 @@ static inline void UpdateHHScores(int bonus, int move) {
 
 
 static inline void UpdateHHMoves(int depth, MoveList* quietMoves, int bestMove) {
-    int bonus = std::min(depth * depth, 1200);
+    int bonus = std::min(depth * depth + 16 * depth, 1200);
+    
+    UpdateHHScores(bonus, bestMove);
 
-    if (!GetMoveCapture(bestMove)) {
-        UpdateHHScores(bonus, bestMove);
-
-        for (int moveCount = 0; moveCount < quietMoves->count; ++moveCount) {
-            if (quietMoves->moves[moveCount] == bestMove) {
-                continue;
-            }
-
-            UpdateHHScores(-bonus, quietMoves->moves[moveCount]);
-        
+    for (int moveCount = 0; moveCount < quietMoves->count; ++moveCount) {
+        if (quietMoves->moves[moveCount] == bestMove) {
+            continue;
         }
+
+        UpdateHHScores(-bonus, quietMoves->moves[moveCount]);
+    
     }
+    
 }
 
 
@@ -339,9 +338,11 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
                 if (!GetMoveCapture(moveList->moves[moveCount])) {
                     killerMoves[ply][1] = killerMoves[ply][0];
                     killerMoves[ply][0] = moveList->moves[moveCount];
+
+                    UpdateHHMoves(depth, quietMoves, bestMove);
                 }
 
-                UpdateHHMoves(depth, quietMoves, bestMove);
+                
                 StoreTTEntry(depth, LOWERBOUND, score, bestMove, ply);
                 return score;
             } 
@@ -381,7 +382,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
     int beta = MAX_SCORE;
 
     startTime = GetTimeMs();
-    moveTime = (timeLeft / 20) + (timeInc / 2);
+    moveTime = (timeLeft / 20) + (timeInc / 2) - 15;
 
     int ply = 0;
     int bestMoveCurrIter = 0;
