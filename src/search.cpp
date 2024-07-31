@@ -219,6 +219,7 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
             return eval;
         }
 
+        
         if (depth >= 3) {
             CopyBoard();
 
@@ -240,6 +241,14 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
                 return score;
             }
         }
+
+        if (depth <= 5 && eval + 256 * depth < alpha) {
+            const int razorScore = QSearch(alpha, beta, ply);
+            if (razorScore <= alpha) {
+                return razorScore;
+            }
+        }
+        
 
     }
 
@@ -272,6 +281,7 @@ int Negamax(int depth, int alpha, int beta, int ply, bool isPv) {
         if ((totalMoves == 1) && isPv) {
             score = -Negamax(depth - 1, -beta, -alpha, ply + 1, true);
         } else {
+            
             score = -Negamax(depth - 1, -alpha - 1, -alpha, ply + 1, false);
 
             if ((score > alpha) && (score < beta)) {
@@ -360,7 +370,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
 
     for (int currDepth = 1; currDepth <= maxDepth; ++currDepth) {
 
-        if (currDepth >= 7 && doAspiration) {
+        if (currDepth >= 3 && doAspiration) {
             alpha = score - 40;
             beta = score + 40;
         }
