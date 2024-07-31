@@ -244,9 +244,12 @@ int Negamax(int depth, int alpha, int beta, int ply) {
             return eval;
         }
 
-        
-        if (depth >= 3) {
+        bool isZugzwang = GetBitCount(occupancies[side]) == GetBitCount(bitboards[Pieces::P + side * 6] | bitboards[Pieces::K + side * 6]);
+        if (depth >= 3 && ply && !isZugzwang) {
             CopyBoard();
+            
+            repHistory[repIndex] = hashKey;
+            repIndex++;
 
             side ^= 1;
             hashKey ^= sideKeys;
@@ -254,18 +257,24 @@ int Negamax(int depth, int alpha, int beta, int ply) {
             if (enpassantSquare != Squares::noSquare) {hashKey ^= enpassantKeys[enpassantSquare % 8];}
             enpassantSquare = Squares::noSquare;
 
-            repIndex++;
-            repHistory[repIndex] = hashKey;
+            if (GetTimeMs() - startTime >= moveTime) {
+                stopEarly = true;
+                return 0;
+            }
 
-            int score = -Negamax(depth - 3, -beta, -beta + 1, ply + 1, false);
+            int score = -Negamax<false>(depth - 3, -beta, -beta + 1, ply + 1);
             
             TakeBack();
             repIndex--;
             
             if (score >= beta) {
+                if (score > MATE_FOUND) {
+                    return beta;
+                }
                 return score;
             }
         }
+        
 
 
     }
@@ -298,13 +307,13 @@ int Negamax(int depth, int alpha, int beta, int ply) {
         
         
         if ((totalMoves == 1) && isPv) {
-            score = -<true>Negamax(depth - 1, -beta, -alpha, ply + 1);
+            score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
         } else {
             
-            score = -<false>Negamax(depth - 1, -alpha - 1, -alpha, ply + 1);
+            score = -Negamax<false>(depth - 1, -alpha - 1, -alpha, ply + 1);
 
             if ((score > alpha) && (score < beta)) {
-                score = -<true>Negamax(depth - 1, -beta, -alpha, ply + 1);
+                score = -Negamax<true>(depth - 1, -beta, -alpha, ply + 1);
             }
         }
         
@@ -399,7 +408,7 @@ void SearchPosition(int maxDepth, int timeLeft, int timeInc) {
             beta = score + 40;
         }
 
-        score = <true>Negamax(currDepth, alpha, beta, ply, true);
+        score = Negamax<true>(currDepth, alpha, beta, ply);
 
         if (!((score > alpha) && (score < beta))) {
             alpha = -MAX_SCORE;

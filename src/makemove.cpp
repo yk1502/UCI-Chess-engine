@@ -58,6 +58,10 @@ bool MakeMove(int move) {
     int isDouble = GetMoveDouble(move);
     int isPromotion = GetMovePromotion(move);
 
+    
+    repHistory[repIndex] = hashKey;
+    repIndex++;
+
     hashKey ^= pieceKeys[piece][sourceSquare];
 	hashKey ^= pieceKeys[piece][targetSquare];
     
@@ -229,6 +233,7 @@ bool MakeMove(int move) {
     if (IsSquareAttacked(kingSquare, otherSide)) {
         
         TakeBack();
+        repIndex--;
         // return false if its an illegal move
         return false;
     }
@@ -258,8 +263,7 @@ bool MakeMove(int move) {
     */
 
     // return true if its legal
-    repIndex++;
-    repHistory[repIndex] = hashKey;
+    
    
     return true;
 }
